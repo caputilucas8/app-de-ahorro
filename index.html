@@ -2,7 +2,7 @@
 <html lang="es-AR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Ahorro · Objetivos</title>
 <style>
 /* ============================================================
@@ -109,7 +109,21 @@ h1,h2,h3{text-wrap:balance}
 .wrap{max-width:1120px;margin:0 auto;padding:22px 20px 90px}
 
 /* ---- topbar ---- */
-.topbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+/* fija arriba: para llegar al menú o al lápiz sin tener que volver al principio */
+.topbar{
+  position:sticky;top:0;z-index:38;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  margin:0 -20px 14px;padding:10px 20px;
+  background:color-mix(in srgb, var(--bg) 88%, transparent);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border-bottom:1px solid transparent;
+  transition:border-color .2s var(--ease);
+}
+.topbar.pegada{border-bottom-color:var(--line-soft)}
+/* respaldo por si el navegador no soporta color-mix */
+@supports not (background: color-mix(in srgb, red 50%, blue)){
+  .topbar{background:var(--bg)}
+}
 .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.2px;font-size:17px}
 .brand .dot{
   width:26px;height:26px;border-radius:8px;flex:none;
@@ -206,7 +220,12 @@ button{font-family:inherit}
 
 /* ---- hero: la cifra grande a la izquierda, el anillo como acompañante ---- */
 .hero{display:grid;grid-template-columns:1fr 188px;gap:32px;align-items:center;padding:8px 0 4px}
-@media(max-width:760px){.hero{grid-template-columns:1fr;gap:24px}}
+/* en celular el anillo NO baja: se achica y se queda al lado de la cifra,
+   así el hero ocupa la mitad y entra la recomendación sin scrollear */
+@media(max-width:760px){
+  .hero{grid-template-columns:1fr auto;gap:16px;align-items:start;padding:4px 0 0}
+  .hero-main{gap:9px}
+}
 
 .hero-main{display:flex;flex-direction:column;gap:14px;min-width:0}
 .h-title h1{margin:0;font-size:clamp(20px,2.6vw,26px);font-weight:680;letter-spacing:-.02em}
@@ -609,11 +628,15 @@ svg.chart{width:100%;height:auto;display:block;min-width:520px}
 ::-webkit-scrollbar-thumb{background:var(--card-3);border-radius:5px}
 ::-webkit-scrollbar-thumb:hover{background:var(--line)}
 
+/* el botón para desplegar la carga detallada solo existe en celular */
+#btnDetalle{display:none}
+
 /* ============================================================
    CELULAR
    ============================================================ */
 @media(max-width:700px){
-  .wrap{padding:16px 14px 96px}
+  html{touch-action:manipulation}   /* mata el zoom por doble toque */
+  .wrap{padding:0 14px 96px}
   .card-h{padding:15px 16px 12px}
   .card-b{padding:6px 16px 18px}
   .mgrid{grid-template-columns:repeat(2,1fr);gap:8px}
@@ -622,10 +645,32 @@ svg.chart{width:100%;height:auto;display:block;min-width:520px}
   #app > * + *{margin-top:12px}
 
   /* la barra superior se compacta: los botones quedan solo con ícono */
-  .topbar{gap:8px}
+  .topbar{gap:8px;margin:0 -14px 12px;padding:10px 14px}
   .brand{font-size:15px}
   #btnExport span,#btnTest span{display:none}
   .chip{font-size:11.5px;padding:6px 9px}
+
+  /* ---- hero compacto: cifra más chica y anillo al costado ---- */
+  .figure.xl{font-size:clamp(30px,9vw,38px)}
+  .h-figure{gap:10px}
+  .h-figure .sub{font-size:11.5px;padding-bottom:3px;line-height:1.35}
+  .h-title h1{font-size:19px}
+  .h-meta{font-size:12px;gap:6px}
+  .ring{width:104px;height:104px;justify-self:end;margin-top:2px}
+  .ring .pct{font-size:22px}
+  .ring .of{font-size:8px;letter-spacing:.1em}
+  .status{padding:11px 13px;font-size:12.8px}
+  .m{padding:12px 13px 11px;gap:6px}
+  .m .val{font-size:clamp(19px,5.4vw,23px)}
+  .m .sub{font-size:11px}
+
+  /* ---- movimientos: en el celular solo el historial ----
+     Para cargar plata está la barra fija de abajo. El formulario detallado
+     (fecha, nota, excluir) queda detrás del botón «Otra fecha», porque sirve
+     únicamente para cargar algo atrasado. */
+  #fMov{display:none}
+  #fMov.abierto{display:block;margin-bottom:14px}
+  #btnDetalle{display:inline-flex}
 
   /* carga rápida fija abajo, al alcance del pulgar */
   .quick{
@@ -650,9 +695,12 @@ svg.chart{width:100%;height:auto;display:block;min-width:520px}
   svg.chart{min-width:340px}
 }
 @media(max-width:420px){
-  .mgrid{grid-template-columns:1fr}
-  .figure.xl{font-size:40px}
+  .mgrid{grid-template-columns:repeat(2,1fr)}
+  .ring{width:92px;height:92px}
+  .ring .pct{font-size:20px}
 }
+/* cuando el panel está abierto, el fondo queda clavado: nada se mueve detrás */
+body.bloqueado{position:fixed;left:0;right:0;overflow:hidden;width:100%}
 </style>
 </head>
 <body>
@@ -1446,10 +1494,23 @@ function modal(title, bodyHTML, buttons, afterOpen, cls){
     el.onclick = b.onClick;
     foot.appendChild(el);
   });
+  if(!document.body.classList.contains('bloqueado')){
+    scrollGuardado = window.scrollY;
+    document.body.classList.add('bloqueado');
+    document.body.style.top = (-scrollGuardado) + 'px';
+  }
   ov.classList.add('show');
   if(afterOpen) afterOpen();
 }
-function closeModal(){ ov.classList.remove('show'); onCloseModal = null; }
+function closeModal(){
+  ov.classList.remove('show'); onCloseModal = null;
+  // solo desbloqueamos si el panel lateral no lo está sosteniendo
+  if(!drawer.classList.contains('show')){
+    document.body.classList.remove('bloqueado');
+    document.body.style.top = '';
+    window.scrollTo(0, scrollGuardado);
+  }
+}
 ov.addEventListener('mousedown', e => { if(e.target === ov) closeModal(); });
 document.addEventListener('keydown', e => { if(e.key === 'Escape' && ov.classList.contains('show')) closeModal(); });
 
@@ -1823,6 +1884,7 @@ function movHTML(o,c){
   return `<div class="card">
     <div class="card-h">
       <h2>${ico('ledger')} Movimientos</h2>
+      <button class="btn sm ghost" id="btnDetalle" title="Cargar un movimiento con otra fecha">${ico('clock')} Otra fecha</button>
       <div class="spacer"></div>
       <span class="chip num">Saldo <b>${usd(c.saldo)} USD</b></span>
     </div>
@@ -2274,44 +2336,6 @@ function fechasHTML(o,c){
 }
 
 /* ---- ajustes del objetivo ---- */
-function settingsHTML(o,c){
-  return `<div class="card">
-    <div class="card-h"><h2>${ico('gear')} Ajustes de este objetivo</h2></div>
-    <div class="card-b">
-      <div class="stack">
-        <div class="f"><label>Nombre</label><input id="setName" value="${esc(o.name)}" maxlength="60"></div>
-        <div class="row">
-          <div class="f"><label>Fecha meta</label><input id="setDate" type="date" value="${o.targetDate}"></div>
-          <div class="f"><label>Arrancó el</label><input id="setStart" type="date" value="${o.startDate}"></div>
-        </div>
-        <div class="hint">«Arrancó el» es desde cuándo se traza la línea del plan ideal. Cambialo si empezaste a ahorrar antes de crear el objetivo.</div>
-      </div>
-      <div class="sep"></div>
-      <div class="stack">
-        <label class="check"><input type="checkbox" id="setRecOn" ${o.recurrente&&o.recurrente.activo?'checked':''}>
-          Destino parte del sueldo a este objetivo todos los meses</label>
-        <div class="row" id="setRecBox" style="${o.recurrente&&o.recurrente.activo?'':'display:none'}">
-          <div class="f xs"><label>Día del mes</label>
-            <input id="setRecDia" type="number" min="1" max="31" value="${o.recurrente?o.recurrente.dia:5}"></div>
-          <div class="f"><label>Monto USD</label>
-            <input id="setRecMonto" type="number" step="0.01" min="0" value="${o.recurrente?o.recurrente.monto:''}" placeholder="50"></div>
-        </div>
-        <div class="hint">Ese aporte queda <b>fuera del promedio semanal</b> a propósito: como ya
-          está previsto, el ritmo mide solo lo que ahorrás de más. La proyección suma las dos cosas.</div>
-      </div>
-      <div class="sep"></div>
-      <div class="row">
-        <button class="btn" id="btnArch">${o.archived?'Desarchivar':'Archivar'} objetivo</button>
-        <div class="spacer"></div>
-        <button class="btn danger ghost" id="btnDelObj">Borrar objetivo</button>
-      </div>
-      <div class="warnbox" style="margin-top:14px">
-        Los datos se guardan solo en este navegador. Si limpiás la caché sin haber hecho
-        <b>Backup</b>, se pierde todo el historial.
-      </div>
-    </div>
-  </div>`;
-}
 
 /* ============================================================
    9. EVENTOS
@@ -2465,6 +2489,16 @@ function wire(o,c){
   if($('#qAdd')) $('#qAdd').onclick = () => montoModal(1);
   if($('#qSub')) $('#qSub').onclick = () => montoModal(-1);
 
+  /* -- en celular el formulario detallado arranca oculto y se despliega acá -- */
+  const bd = $('#btnDetalle');
+  if(bd) bd.onclick = () => {
+    const f = $('#fMov');
+    if(!f) return;
+    const abierto = f.classList.toggle('abierto');
+    bd.classList.toggle('primary', abierto);
+    if(abierto) f.querySelector('[name=amount]').focus();
+  };
+
   /* -- carga rápida (quedó sin campo inline; se mantiene por compatibilidad) -- */
   const qA = $('#qAmount'), qC = $('#qCat'), qF = $('#qFlash');
 
@@ -2585,101 +2619,8 @@ function wire(o,c){
 
   /* -- el simulador vive en el panel lateral; acá no hay nada que cablear -- */
 
-  /* -- ajustes -- */
-  const nm = $('#setName');
-  if(nm) nm.onchange = () => {
-    const v = nm.value.trim();
-    if(v){ o.name = v; save(); renderTabs(); }
-  };
-  const sd = $('#setDate');
-  if(sd) sd.onchange = () => {
-    if(!sd.value) return;
-    if(sd.value <= o.startDate){
-      // con meta <= arranque el plan lineal colapsa a un día y muestra cualquier cosa
-      alert('La fecha meta tiene que ser posterior al arranque ('+fmtDate(o.startDate)+').');
-      sd.value = o.targetDate;
-      return;
-    }
-    o.targetDate = sd.value; save(); renderTabs(); render();
-  };
-  const ss = $('#setStart');
-  if(ss) ss.onchange = () => {
-    if(!ss.value) return;
-    if(ss.value >= o.targetDate){
-      alert('El arranque tiene que ser anterior a la fecha meta ('+fmtDate(o.targetDate)+').');
-      ss.value = o.startDate;
-      return;
-    }
-    o.startDate = ss.value; save(); render();
-  };
-
-  /* -- sueldo recurrente -- */
-  const rOn = $('#setRecOn');
-
-  // Marca como hechos los meses cuyo cobro ya venció. Se usa al apagar el recurrente
-  // y al volver a prenderlo: los meses del período apagado no deben caer todos juntos
-  // como pendientes.
-  const saltearVencidos = (rec) => {
-    let ym = rec.desde;
-    const lim = mesDe(today());
-    while(ym <= lim){
-      if(diaDelMes(ym, rec.dia) < today() && !rec.hechos.includes(ym)) rec.hechos.push(ym);
-      ym = addMes(ym, 1);
-    }
-  };
-
-  const guardarRec = () => {
-    if(!rOn.checked){
-      if(o.recurrente){
-        saltearVencidos(o.recurrente);
-        o.recurrente.activo = false;
-      }
-      save(); renderTabs(); render(); return;
-    }
-    const dia = Math.max(1, Math.min(31, Number($('#setRecDia').value) || 1));
-    const monto = Number($('#setRecMonto').value) || 0;
-    const prev = o.recurrente;
-    const reactivando = !!(prev && prev.activo === false);
-    o.recurrente = {
-      dia, monto, activo: true,
-      desde: (prev && prev.desde) || mesDesdeRec(dia),
-      hechos: (prev && prev.hechos) || []
-    };
-    // Solo al reactivar: editar el día o el monto con el recurrente prendido no debe
-    // tragarse un mes que estaba legítimamente pendiente.
-    if(reactivando) saltearVencidos(o.recurrente);
-    save(); renderTabs(); render();
-  };
-  if(rOn){
-    rOn.onchange = () => {
-      const box = $('#setRecBox');
-      if(box) box.style.display = rOn.checked ? '' : 'none';
-      if(!rOn.checked) guardarRec();
-    };
-    const rd = $('#setRecDia'), rm = $('#setRecMonto');
-    if(rd) rd.onchange = guardarRec;
-    if(rm) rm.onchange = guardarRec;
-  }
-
-  const ba = $('#btnArch');
-  if(ba) ba.onclick = () => {
-    o.archived = !o.archived;
-    if(o.archived){
-      const next = state.objectives.find(x => !x.archived);
-      state.activeId = next ? next.id : o.id;
-      showArchived = !next;
-    }
-    save(); renderTabs(); render();
-  };
-
-  const bd = $('#btnDelObj');
-  if(bd) bd.onclick = () => {
-    if(!confirm('¿Borrar el objetivo «'+o.name+'» con todos sus ítems y movimientos?\n\nEsto no se puede deshacer.')) return;
-    state.objectives = state.objectives.filter(x => x.id !== o.id);
-    const next = state.objectives.find(x => !x.archived) || state.objectives[0];
-    state.activeId = next ? next.id : null;
-    save(); renderTabs(); render();
-  };
+  /* Los ajustes del objetivo se mudaron al lápiz (editModal) y el sueldo al
+     panel lateral. Acá no queda nada que cablear. */
 }
 
 function moveItem(o, id, dir){
@@ -2817,21 +2758,70 @@ function toggleTestMode(){
 const drawer = document.getElementById('drawer');
 const scrim  = document.getElementById('scrim');
 
+// Guardamos dónde estaba el scroll para devolverlo intacto al cerrar. Con solo
+// overflow:hidden el celular igual arrastra el fondo; hay que fijar el body.
+let scrollGuardado = 0;
+
 function openDrawer(){
   renderDrawer();
+  scrollGuardado = window.scrollY;
+  document.body.classList.add('bloqueado');
+  document.body.style.top = (-scrollGuardado) + 'px';
   drawer.classList.add('show'); scrim.classList.add('show');
   drawer.setAttribute('aria-hidden','false');
   document.getElementById('btnMenu').setAttribute('aria-expanded','true');
-  document.body.style.overflow = 'hidden';
   const p = drawer.querySelector('button,input,select'); if(p) p.focus();
 }
 function closeDrawer(){
+  drawer.style.transition = '';
+  drawer.style.transform = '';
   drawer.classList.remove('show'); scrim.classList.remove('show');
+  scrim.style.opacity = '';
   drawer.setAttribute('aria-hidden','true');
   document.getElementById('btnMenu').setAttribute('aria-expanded','false');
-  document.body.style.overflow = '';
+  document.body.classList.remove('bloqueado');
+  document.body.style.top = '';
+  window.scrollTo(0, scrollGuardado);
 }
 scrim.onclick = closeDrawer;
+
+/* ---- deslizar hacia la izquierda para cerrar el panel ---- */
+(function(){
+  let x0 = null, y0 = null, dx = 0, arrastrando = false;
+  const ANCHO = () => drawer.getBoundingClientRect().width || 320;
+
+  drawer.addEventListener('touchstart', e => {
+    if(!drawer.classList.contains('show')) return;
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+    dx = 0; arrastrando = false;
+    drawer.style.transition = 'none';
+  }, {passive:true});
+
+  drawer.addEventListener('touchmove', e => {
+    if(x0 === null) return;
+    const cx = e.touches[0].clientX, cy = e.touches[0].clientY;
+    // hasta no saber si el gesto es horizontal, no secuestramos el scroll vertical
+    if(!arrastrando){
+      if(Math.abs(cx-x0) < 10 && Math.abs(cy-y0) < 10) return;
+      if(Math.abs(cy-y0) > Math.abs(cx-x0)){ x0 = null; return; }  // es scroll, lo dejamos
+      arrastrando = true;
+    }
+    dx = Math.min(0, cx - x0);          // solo hacia la izquierda
+    drawer.style.transform = 'translateX(' + dx + 'px)';
+    scrim.style.opacity = String(Math.max(0, 1 + dx/ANCHO()));
+  }, {passive:true});
+
+  const soltar = () => {
+    if(x0 === null){ drawer.style.transition = ''; return; }
+    drawer.style.transition = '';
+    const paso = arrastrando && Math.abs(dx) > ANCHO() * 0.3;
+    x0 = null; arrastrando = false;
+    if(paso){ closeDrawer(); }
+    else { drawer.style.transform = ''; scrim.style.opacity = ''; }
+  };
+  drawer.addEventListener('touchend', soltar, {passive:true});
+  drawer.addEventListener('touchcancel', soltar, {passive:true});
+})();
 document.getElementById('btnMenu').onclick = () =>
   drawer.classList.contains('show') ? closeDrawer() : openDrawer();
 
@@ -3242,6 +3232,12 @@ document.getElementById('fileImport').onchange = e => {
 // íconos de la barra superior (los botones nacen vacíos en el HTML)
 document.getElementById('btnMenu').innerHTML = ico('menu');
 document.getElementById('btnEdit').innerHTML = ico('pencil');
+
+// sombra sutil en la barra fija apenas se empieza a scrollear
+const topbarEl = document.querySelector('.topbar');
+addEventListener('scroll', () => {
+  topbarEl.classList.toggle('pegada', window.scrollY > 4);
+}, {passive:true});
 
 document.documentElement.dataset.theme = state.settings.theme || 'dark';
 renderRate();

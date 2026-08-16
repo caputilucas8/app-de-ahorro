@@ -30,6 +30,19 @@ for f in compute heroHTML itemsHTML movHTML chartHTML render wire; do
 done
 ```
 
+## Validar la sintaxis antes de dar nada por hecho
+
+Un error de sintaxis no se ve en la consola del navegador cuando el archivo se abre
+como `data:`: la pantalla queda en blanco y parece otro problema. Después de editar,
+siempre:
+
+```bash
+python -c "import io;s=io.open('index.html',encoding='utf-8').read();i=s.index('<script>')+8;io.open('_check.js','w',encoding='utf-8',newline='').write(s[i:s.rindex('</script>')])" && node --check _check.js && rm _check.js
+```
+
+Ya pasó dos veces: una variable declarada dos veces en `wire()` y una función huérfana
+que quedó tras mover los ajustes al lápiz.
+
 ## Decisiones de diseño que no se tocan
 
 1. Los aportes se cargan en dólares y quedan congelados. La cotización del BNA es solo
