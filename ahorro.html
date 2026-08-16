@@ -399,7 +399,7 @@ svg.chart{width:100%;height:auto;display:block;min-width:520px}
   padding:9px 18px;font-size:12.5px;
   background:linear-gradient(90deg,rgba(245,181,68,.18),rgba(245,181,68,.07));
   border-bottom:1px solid rgba(245,181,68,.4);
-  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
 }
 .testbar .tb-tag{
   font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:10.5px;
@@ -491,7 +491,7 @@ svg.chart{width:100%;height:auto;display:block;min-width:520px}
 
 .scrim{
   position:fixed;inset:0;z-index:60;
-  background:rgba(2,6,12,.66);backdrop-filter:blur(6px);
+  background:rgba(2,6,12,.66);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
   opacity:0;pointer-events:none;transition:opacity .3s var(--ease);
 }
 .scrim.show{opacity:1;pointer-events:auto}
@@ -555,7 +555,7 @@ svg.chart{width:100%;height:auto;display:block;min-width:520px}
 .orow.arch .oi b{opacity:.5}
 
 /* ---- modal ---- */
-.ov{position:fixed;inset:0;background:rgba(2,6,12,.66);backdrop-filter:blur(6px);
+.ov{position:fixed;inset:0;background:rgba(2,6,12,.66);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
   display:none;place-items:center;padding:20px;z-index:70}
 .ov.show{display:grid;animation:ovIn .22s var(--ease)}
 @keyframes ovIn{from{opacity:0}to{opacity:1}}
@@ -690,6 +690,41 @@ svg.chart{width:100%;height:auto;display:block;min-width:520px}
 <script>
 
 "use strict";
+
+/* ============================================================
+   0. RED DE SEGURIDAD
+   Si algo revienta al arrancar, el encabezado ya está dibujado (es HTML fijo)
+   pero el resto queda en blanco y sin forma de saber qué pasó, sobre todo en el
+   celular donde no se puede abrir la consola. Esto lo muestra en pantalla.
+   ============================================================ */
+window.addEventListener('error', function(e){
+  const app = document.getElementById('app');
+  if(!app || app.dataset.fallo) return;
+  app.dataset.fallo = '1';
+  const limpio = s => String(s).replace(/[<>&]/g,'');
+  const msg = (e.error && e.error.message) || e.message || 'error desconocido';
+  app.innerHTML =
+    '<div style="background:#2a1116;border:1px solid #ff6b7a;border-radius:14px;padding:20px;'
+    + 'color:#ffd9dd;font:14px/1.55 system-ui,sans-serif">'
+    + '<b style="display:block;font-size:16px;margin-bottom:8px;color:#ff8f9b">La app no pudo arrancar</b>'
+    + '<div style="margin-bottom:12px">Pasame este texto y lo arreglo:</div>'
+    + '<code style="display:block;background:#160a0d;padding:12px;border-radius:9px;'
+    + 'word-break:break-word;font-size:12.5px">' + limpio(msg)
+    + (e.lineno ? ' · línea ' + e.lineno : '') + '</code>'
+    + '<div style="margin-top:12px;font-size:12px;opacity:.75;word-break:break-word">'
+    + limpio(navigator.userAgent).slice(0,110) + '</div></div>';
+});
+
+/**
+ * Copia profunda. structuredClone no existe en Chrome anterior a 98 ni en iOS
+ * anterior a 15.4, y como se usa al arrancar dejaba la pantalla en blanco.
+ */
+function clonar(o){
+  try{
+    if(typeof structuredClone === 'function') return structuredClone(o);
+  }catch(e){ /* existe pero falla con ciertos objetos: caemos al respaldo */ }
+  return JSON.parse(JSON.stringify(o));
+}
 
 /* ============================================================
    1. UTILIDADES DE FECHA  (siempre en hora local, nunca UTC)
@@ -935,19 +970,19 @@ let state = load();
 function load(){
   try{
     const raw = lsGet(KEY());
-    const s = raw ? normalize(JSON.parse(raw)) : structuredClone(DEFAULT_STATE);
+    const s = raw ? normalize(JSON.parse(raw)) : clonar(DEFAULT_STATE);
     fakeToday = testMode ? (s.settings.fakeToday || null) : null;
     return s;
   }catch(e){
     console.warn('No se pudo leer el guardado:', e);
     fakeToday = null;
-    return structuredClone(DEFAULT_STATE);
+    return clonar(DEFAULT_STATE);
   }
 }
 
 /** Rellena campos faltantes para que un JSON viejo o importado no rompa nada */
 function normalize(s){
-  const base = structuredClone(DEFAULT_STATE);
+  const base = clonar(DEFAULT_STATE);
   if(!s || typeof s !== 'object') return base;
   const out = Object.assign(base, {
     version: 2,
@@ -2767,7 +2802,7 @@ function toggleTestMode(){
   if(testMode){ setTestMode(false); return; }
   // Foto de tus datos reales tal como están en este momento: el sandbox arranca
   // idéntico a lo real (objetivos, ítems, movimientos, sueldo) y de ahí jugás.
-  const foto = structuredClone(state);
+  const foto = clonar(state);
   foto.settings.fakeToday = null;
   setTestMode(true);          // cambia a la caja de prueba
   state = foto;               // ...y la pisa con la foto recién sacada
