@@ -1,0 +1,8 @@
+# copias de datos exportadas desde la app (pueden tener info personal)
+ahorro-backup-*.json
+ahorro-PRUEBA-*.json
+
+# temporales
+*.tmp
+*.bak
+Thumbs.db

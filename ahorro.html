@@ -1,0 +1,3225 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ahorro · Objetivos</title>
+<style>
+/* ============================================================
+   PALETA
+   ============================================================ */
+:root{
+  /* Fondo casi negro con sesgo navy: deja que las tarjetas floten por contraste
+     y no por sombras, como en las referencias. */
+  --bg:#050B14;
+  --bg-a:#081326;
+  --bg-b:#050B14;
+  --card:#0B1523;
+  --card-2:#101E31;
+  --card-3:#17293F;
+  --line:#1A2C44;
+  --line-soft:#132133;
+  --txt:#EFF5FC;
+  --muted:#8098B8;
+  --dim:#7A96B4;
+  /* El menta es un recurso escaso: solo estado positivo y progreso real.
+     Las cifras protagonistas van en --txt, no en acento. */
+  --acc:#2FD6A0;
+  --acc-2:#17A87E;
+  --acc-glow:rgba(47,214,160,.13);
+  --warn:#F5B544;
+  --bad:#FF6B7A;
+  --blue:#5AA2FF;
+  --shadow:none;
+  --r:18px;
+  --r-sm:12px;
+  --ease:cubic-bezier(.22,.68,.36,1);
+}
+html[data-theme="light"]{
+  --bg:#EEF2F7;
+  --bg-a:#F6F9FC;
+  --bg-b:#E9EFF6;
+  --card:#FFFFFF;
+  --card-2:#F2F6FA;
+  --card-3:#E5EDF5;
+  --line:#DCE5EF;
+  --line-soft:#EAF0F6;
+  --txt:#08182B;
+  --muted:#556F8D;
+  --dim:#6C819A;
+  --acc:#0E9B72;
+  --acc-2:#0A7355;
+  --acc-glow:rgba(14,155,114,.10);
+  --warn:#B87A08;
+  --bad:#D14453;
+  --blue:#2B7FD4;
+  --shadow:none;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:
+    radial-gradient(1200px 700px at 10% -12%, var(--bg-a) 0%, transparent 60%),
+    var(--bg);
+  background-attachment:fixed;
+  color:var(--txt);
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  font-size:15px;
+  line-height:1.5;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+/* ============================================================
+   PRIMITIVAS TIPOGRÁFICAS
+   La cifra manda: enorme, apretada, en color de texto (no de acento).
+   ============================================================ */
+.eyebrow{
+  display:flex;align-items:center;gap:7px;
+  font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--dim);
+}
+.eyebrow svg{width:13px;height:13px;flex:none;stroke-width:2}
+
+.figure{
+  font-variant-numeric:tabular-nums;font-feature-settings:"tnum";
+  font-weight:700;letter-spacing:-.045em;line-height:.92;color:var(--txt);
+  display:inline-flex;align-items:baseline;gap:.12em;
+}
+.figure .unit{
+  font-size:.34em;font-weight:600;letter-spacing:0;color:var(--muted);
+  align-self:flex-start;margin-top:.35em;
+}
+.figure.xl{font-size:clamp(42px,7.5vw,72px)}
+.figure.lg{font-size:clamp(28px,4.4vw,40px);letter-spacing:-.035em}
+.figure.md{font-size:clamp(22px,3vw,28px);letter-spacing:-.03em}
+.figure.acc{color:var(--acc)}
+.figure.bad{color:var(--bad)}
+.figure.warn{color:var(--warn)}
+
+.cap{font-size:12.5px;color:var(--muted);line-height:1.45}
+.cap b{color:var(--txt);font-weight:600}
+h1,h2,h3{text-wrap:balance}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.wrap{max-width:1120px;margin:0 auto;padding:22px 20px 90px}
+
+/* ---- topbar ---- */
+.topbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:-.2px;font-size:17px}
+.brand .dot{
+  width:26px;height:26px;border-radius:8px;flex:none;
+  background:linear-gradient(140deg,var(--acc),var(--acc-2));
+  box-shadow:0 0 0 1px rgba(255,255,255,.09) inset, 0 6px 16px -6px var(--acc);
+  display:grid;place-items:center;color:#04241a;font-size:14px;font-weight:900;
+}
+.spacer{flex:1}
+.tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+.chip{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--card);border:1px solid var(--line);
+  padding:7px 11px;border-radius:10px;font-size:12.5px;color:var(--muted);
+  white-space:nowrap;
+}
+.chip b{color:var(--txt);font-weight:600}
+.chip .live{width:7px;height:7px;border-radius:50%;background:var(--acc);flex:none;
+  box-shadow:0 0 0 3px var(--acc-glow)}
+.chip .live.stale{background:var(--warn);box-shadow:0 0 0 3px rgba(245,181,68,.15)}
+.chip.click{cursor:pointer;transition:border-color .15s,color .15s}
+.chip.click:hover{border-color:var(--acc);color:var(--txt)}
+
+button{font-family:inherit}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  background:var(--card-2);color:var(--txt);
+  border:1px solid var(--line);border-radius:10px;
+  padding:9px 15px;font-size:13.5px;font-weight:600;cursor:pointer;
+  transition:background .18s var(--ease),border-color .18s var(--ease),
+             color .18s var(--ease),transform .12s var(--ease);
+}
+.btn svg{width:14px;height:14px;stroke-width:2;flex:none}
+.btn:hover{background:var(--card-3);border-color:var(--card-3)}
+.btn:active{transform:scale(.975)}
+.btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.btn.primary{background:var(--acc);color:#04201A;border-color:var(--acc);font-weight:700}
+.btn.primary:hover{background:#43E3B0;border-color:#43E3B0}
+.btn.ghost{background:transparent;color:var(--muted)}
+.btn.ghost:hover{background:var(--card-2);color:var(--txt)}
+.btn.danger{color:var(--bad)}
+.btn.danger:hover{border-color:var(--bad);background:rgba(255,107,122,.08)}
+.btn.sm{padding:6px 11px;font-size:12.5px;border-radius:8px}
+.btn.icon{padding:0;width:34px;height:34px}
+.btn[disabled]{opacity:.35;cursor:not-allowed}
+.btn[disabled]:hover{background:var(--card-2);border-color:var(--line)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition-duration:.01ms !important;animation-duration:.01ms !important}
+}
+
+/* ---- tabs de objetivos ---- */
+.tabs{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.tab{
+  position:relative;
+  background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:10px 15px;cursor:pointer;
+  min-width:150px;text-align:left;color:var(--muted);
+  transition:border-color .15s,background .15s,transform .08s;
+}
+.tab:hover{border-color:var(--card-3);background:var(--card-2)}
+.tab .t-name{display:block;font-weight:650;font-size:13.5px;color:var(--txt);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:230px}
+.tab .t-sub{display:block;font-size:11.5px;margin-top:2px}
+/* display:block es obligatorio: como span inline el height no aplica y la barra se desborda */
+.tab .t-bar{display:block;height:3px;border-radius:2px;background:var(--line-soft);margin-top:8px;overflow:hidden}
+.tab .t-bar i{display:block;height:100%;background:var(--acc);border-radius:2px;transition:width .4s ease}
+.tab.active{border-color:var(--acc);background:var(--card-2);
+  box-shadow:0 0 0 1px var(--acc) inset, 0 10px 26px -18px var(--acc)}
+.tab.active .t-sub{color:var(--acc)}
+.tab.arch .t-name{opacity:.55}
+.tab.add{display:grid;place-items:center;min-width:46px;color:var(--acc);font-size:20px;font-weight:700;padding:0 16px}
+
+/* ---- cards ---- */
+.card{
+  background:var(--card);border:1px solid var(--line);
+  border-radius:var(--r);
+  transition:border-color .25s var(--ease),background .25s var(--ease);
+}
+.card:hover{border-color:var(--card-3)}
+/* separación pareja entre todos los bloques de la vista */
+#app > * + *{margin-top:14px}
+.card-h{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:17px 22px 14px;
+}
+.card-h h2{
+  margin:0;font-size:10.5px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--dim);
+  display:flex;align-items:center;gap:7px;
+}
+.card-h h2 svg{width:13px;height:13px;stroke-width:2}
+.card-b{padding:6px 22px 22px}
+
+/* ---- hero: la cifra grande a la izquierda, el anillo como acompañante ---- */
+.hero{display:grid;grid-template-columns:1fr 188px;gap:32px;align-items:center;padding:8px 0 4px}
+@media(max-width:760px){.hero{grid-template-columns:1fr;gap:24px}}
+
+.hero-main{display:flex;flex-direction:column;gap:14px;min-width:0}
+.h-title h1{margin:0;font-size:clamp(20px,2.6vw,26px);font-weight:680;letter-spacing:-.02em}
+.h-meta{color:var(--muted);font-size:13px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.h-meta b{color:var(--txt);font-weight:600}
+.h-meta .dot-sep{width:3px;height:3px;border-radius:50%;background:var(--dim);flex:none}
+
+.h-figure{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap}
+.h-figure .sub{font-size:12.5px;color:var(--muted);padding-bottom:6px}
+.h-figure .sub b{color:var(--txt);font-weight:600}
+
+.ring{position:relative;width:188px;height:188px;flex:none;justify-self:end}
+@media(max-width:760px){.ring{justify-self:start;width:150px;height:150px}}
+.ring svg{transform:rotate(-90deg);display:block;width:100%;height:100%}
+.ring .rt{position:absolute;inset:0;display:grid;place-content:center;text-align:center;gap:3px}
+.ring .pct{font-size:clamp(26px,4vw,34px);font-weight:700;letter-spacing:-.04em;line-height:1;
+  font-variant-numeric:tabular-nums}
+.ring .of{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+
+/* ---- estado: barra lateral de color en vez de caja teñida ---- */
+.status{
+  display:flex;align-items:flex-start;gap:11px;
+  padding:12px 16px;font-size:13.5px;line-height:1.5;color:var(--muted);
+  border-left:2px solid var(--line);background:var(--card-2);
+  border-radius:0 var(--r-sm) var(--r-sm) 0;
+}
+.status .ico{flex:none;margin-top:1px}
+.status .ico svg{width:16px;height:16px;stroke-width:2}
+.status b{font-weight:650;color:var(--txt)}
+.status.ok{border-left-color:var(--acc)}
+.status.ok .ico{color:var(--acc)}
+.status.mid{border-left-color:var(--warn)}
+.status.mid .ico{color:var(--warn)}
+.status.bad{border-left-color:var(--bad)}
+.status.bad .ico{color:var(--bad)}
+
+/* ---- fichas de estadística ---- */
+.mgrid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
+  margin-top:16px;padding-top:16px;border-top:1px solid var(--line-soft);
+}
+@media(max-width:860px){.mgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:420px){.mgrid{grid-template-columns:1fr}}
+.m{
+  background:var(--card-2);border:1px solid transparent;border-radius:var(--r-sm);
+  padding:14px 15px 13px;display:flex;flex-direction:column;gap:8px;
+  transition:border-color .2s var(--ease),transform .2s var(--ease);
+}
+.m:hover{border-color:var(--line);transform:translateY(-1px)}
+.m .lbl{font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--dim);font-weight:700}
+.m .val{font-size:clamp(21px,2.6vw,27px);font-weight:700;letter-spacing:-.035em;line-height:1;
+  font-variant-numeric:tabular-nums}
+.m .val .unit{font-size:.42em;font-weight:600;letter-spacing:0;color:var(--muted);margin-left:.15em}
+.m .sub{font-size:11.5px;color:var(--muted);line-height:1.4;margin-top:auto}
+.m .val.acc{color:var(--acc)}
+.m .val.warn{color:var(--warn)}
+.m .val.bad{color:var(--bad)}
+.m .val.sm{font-size:16px;letter-spacing:-.01em;line-height:1.25}
+.m .spark{height:26px;margin:-2px 0}
+.m .spark svg{width:100%;height:100%;display:block;overflow:visible}
+
+/* ---- barras comparativas (patrón de la referencia) ---- */
+.cmp{display:flex;flex-direction:column;gap:20px}
+.cmp-row{display:grid;grid-template-columns:1fr auto;gap:5px 16px;align-items:baseline}
+.cmp-row .nm{font-size:14px;font-weight:600;color:var(--txt);min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmp-row .nm small{display:block;font-weight:400;font-size:11.5px;color:var(--dim);margin-top:2px}
+.cmp-row .fg{justify-self:end;text-align:right}
+.cmp-row .track{
+  grid-column:1/-1;height:6px;border-radius:99px;background:var(--card-3);overflow:hidden;margin-top:3px;
+}
+.cmp-row .track i{
+  display:block;height:100%;border-radius:99px;background:var(--acc);
+  transition:width .6s var(--ease);
+}
+/* los que todavía no están en curso se muestran apagados, como en la referencia */
+.cmp-row.dim .nm,.cmp-row.dim .figure{color:var(--muted)}
+.cmp-row.dim .track i{background:var(--dim);opacity:.55}
+.cmp-row.done .nm{text-decoration:line-through;color:var(--dim)}
+.cmp-row.done .track i{background:var(--dim);opacity:.4}
+.cmp-row.done .figure{color:var(--dim)}
+
+/* ---- ítems: las acciones aparecen al pasar el mouse para no ensuciar la fila ---- */
+.i-acts{
+  display:flex;gap:2px;align-items:center;justify-content:flex-end;
+  opacity:0;transition:opacity .2s var(--ease);
+}
+.cmp-row:hover .i-acts,.cmp-row:focus-within .i-acts{opacity:1}
+@media(hover:none){.i-acts{opacity:1}}   /* en táctil no hay hover: siempre visibles */
+.ord-btn{
+  background:none;border:0;color:var(--dim);cursor:pointer;
+  padding:7px;min-width:28px;min-height:28px;border-radius:7px;display:grid;place-items:center;
+  transition:color .15s var(--ease),background .15s var(--ease);
+}
+.ord-btn svg{stroke-width:2.2}
+.ord-btn:hover:not([disabled]){color:var(--txt);background:var(--card-3)}
+.ord-btn[disabled]{opacity:.2;cursor:default}
+.ord-btn:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+
+.ready-note{
+  grid-column:1/-1;margin-top:10px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  background:var(--acc-glow);border-left:2px solid var(--acc);
+  border-radius:0 var(--r-sm) var(--r-sm) 0;padding:10px 14px;font-size:13px;color:var(--muted);
+}
+.ready-note b{color:var(--acc);font-weight:650}
+.ready-note svg{color:var(--acc);vertical-align:-2px}
+
+/* ---- formularios ---- */
+.row{display:flex;gap:9px;flex-wrap:wrap;align-items:flex-end}
+.f{display:flex;flex-direction:column;gap:5px;flex:1;min-width:120px}
+.f.sm{flex:0 0 128px;min-width:128px}
+.f.xs{flex:0 0 104px;min-width:104px}
+.f label{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--dim);font-weight:700}
+input,select,textarea{
+  background:var(--card-2);border:1px solid var(--line);color:var(--txt);
+  border-radius:9px;padding:9px 11px;font-size:14px;font-family:inherit;width:100%;
+  transition:border-color .15s,box-shadow .15s;
+}
+input:focus,select:focus,textarea:focus{
+  outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-glow);
+}
+input::placeholder{color:var(--dim)}
+input[type=date]{color-scheme:dark}
+html[data-theme="light"] input[type=date]{color-scheme:light}
+.seg{display:flex;background:var(--card-2);border:1px solid var(--line);border-radius:9px;padding:3px;gap:3px}
+.seg button{
+  flex:1;background:none;border:0;color:var(--muted);cursor:pointer;
+  padding:6px 10px;border-radius:7px;font-size:13px;font-weight:650;
+}
+.seg button.on{background:var(--card-3);color:var(--txt)}
+.seg button.on.in{background:rgba(47,214,160,.16);color:var(--acc)}
+.seg button.on.out{background:rgba(255,107,122,.14);color:var(--bad)}
+.check{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);cursor:pointer;user-select:none}
+.check input{width:15px;height:15px;accent-color:var(--acc);flex:none}
+
+/* ---- movimientos: filas de libro contable, regla fina y cifra a la derecha ---- */
+.mv-list{max-height:340px;overflow-y:auto;margin:0 -22px -22px;padding:0 22px 8px}
+.mv{
+  display:flex;align-items:center;gap:12px;padding:11px 0;
+  border-bottom:1px solid var(--line-soft);font-size:13.5px;
+  transition:background .15s var(--ease);
+}
+.mv:last-child{border-bottom:0}
+.mv:hover{background:linear-gradient(90deg,transparent,var(--card-2) 6%,var(--card-2) 94%,transparent)}
+.mv .d{color:var(--dim);font-size:11.5px;width:62px;flex:none;font-variant-numeric:tabular-nums}
+.mv .n{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--txt)}
+.mv .n .tag{
+  font-size:9.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--dim);border:1px solid var(--line);
+  border-radius:4px;padding:2px 6px;margin-left:8px;white-space:nowrap;
+}
+.mv .a{font-weight:650;white-space:nowrap;text-align:right;display:flex;flex-direction:column;
+  align-items:flex-end;gap:2px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.mv .a .dias{font-style:normal;font-size:10px;font-weight:500;color:var(--dim);letter-spacing:.02em}
+.mv .a.in{color:var(--acc)}
+.mv .a.out{color:var(--bad)}
+.mv .x{
+  background:none;border:0;color:var(--card-3);cursor:pointer;padding:4px;border-radius:6px;flex:none;
+  display:grid;place-items:center;transition:color .15s var(--ease),background .15s var(--ease);
+}
+.mv .x svg{width:14px;height:14px;stroke-width:2}
+.mv:hover .x{color:var(--dim)}
+.mv .x:hover{color:var(--bad);background:rgba(255,107,122,.1)}
+
+/* ---- grid 2col ---- */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:900px){.two{grid-template-columns:1fr}}
+.two > .card{margin-top:0}
+
+/* ---- simulador ---- */
+.sim-out{
+  background:var(--card-2);border:1px solid var(--line);border-radius:11px;
+  padding:13px 15px;margin-top:11px;font-size:14px;line-height:1.6;
+}
+.sim-out b{color:var(--acc);font-weight:700}
+.sim-out .big{font-size:19px;font-weight:720;letter-spacing:-.4px;display:block;margin-top:2px}
+
+/* ---- chart ---- */
+.chart-wrap{width:100%;overflow-x:auto}
+svg.chart{width:100%;height:auto;display:block;min-width:520px}
+.lg{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:11px}
+.lg span{display:inline-flex;align-items:center;gap:6px}
+.lg i{width:15px;height:3px;border-radius:2px;display:inline-block}
+
+/* ---- barra de modo prueba ---- */
+.testbar{
+  position:sticky;top:0;z-index:40;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:9px 18px;font-size:12.5px;
+  background:linear-gradient(90deg,rgba(245,181,68,.18),rgba(245,181,68,.07));
+  border-bottom:1px solid rgba(245,181,68,.4);
+  backdrop-filter:blur(8px);
+}
+.testbar .tb-tag{
+  font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:10.5px;
+  color:var(--warn);border:1px solid var(--warn);border-radius:4px;padding:2px 7px;
+}
+.testbar .tb-txt{color:var(--muted)}
+.testbar .tb-lbl{color:var(--muted);margin-left:4px}
+.testbar .tb-sp{flex:1}
+.testbar input[type=date]{width:auto;padding:5px 8px;font-size:12.5px;border-radius:7px}
+#btnTest.on{border-color:var(--warn);color:var(--warn)}
+
+/* ---- carga rápida ---- */
+.quick{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:12px 18px;border-top:1px solid var(--line-soft);
+}
+.quick .qlbl{font-size:12.5px;color:var(--muted);white-space:nowrap}
+.quick input[type=number]{
+  flex:0 0 128px;font-size:17px;font-weight:650;padding:9px 12px;
+  font-variant-numeric:tabular-nums;
+}
+.quick select{flex:0 0 130px}
+.quick .qsp{flex:1}
+.quick .btn.big{padding:11px 18px;font-size:14px;border-radius:11px}
+
+/* aviso flotante tras cargar plata */
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translate(-50%,14px);z-index:80;
+  background:var(--card-2);border:1px solid var(--line);border-radius:99px;
+  padding:11px 20px;font-size:13.5px;font-weight:600;color:var(--txt);
+  opacity:0;transition:opacity .3s var(--ease),transform .3s var(--ease);
+  box-shadow:0 16px 40px -18px rgba(0,0,0,.85);white-space:nowrap;
+  font-variant-numeric:tabular-nums;pointer-events:none;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast.in{border-color:rgba(47,214,160,.4)}
+.toast.in b{color:var(--acc);font-weight:600}
+.toast.out{border-color:rgba(255,107,122,.4)}
+.toast.out b{color:var(--bad);font-weight:600}
+@media(max-width:700px){.toast{bottom:88px}}
+.flash{
+  font-size:13px;font-weight:600;color:var(--acc);
+  opacity:0;transform:translateY(4px);
+  transition:opacity .25s ease,transform .25s ease;white-space:nowrap;
+}
+.flash.on{opacity:1;transform:none}
+
+/* ---- sueldos pendientes ---- */
+.pend{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:11px 18px;border-top:1px solid var(--line-soft);
+  background:var(--acc-glow);font-size:13.5px;
+}
+.pend b{color:var(--acc)}
+
+/* ---- fechas de oportunidad ---- */
+.fk{display:flex;flex-direction:column;gap:0}
+.fk-row{
+  display:grid;grid-template-columns:1fr auto;gap:4px 14px;align-items:center;
+  padding:11px 0;border-bottom:1px solid var(--line-soft);
+}
+.fk-row:last-child{border-bottom:0}
+.fk-row .n{font-weight:620;font-size:14.5px}
+.fk-row .n small{display:block;font-weight:400;font-size:12px;color:var(--dim);margin-top:1px}
+.fk-row .v{text-align:right;font-size:13px;color:var(--muted);white-space:nowrap}
+.fk-row .v b{display:block;font-size:17px;font-weight:700;letter-spacing:-.3px}
+.fk-row.ok .v b{color:var(--acc)}
+.fk-bar{grid-column:1/-1;height:5px;border-radius:3px;background:var(--card-3);overflow:hidden}
+.fk-bar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--acc-2),var(--acc))}
+.fk-row.ok .fk-bar i{background:var(--acc)}
+
+/* ---- vacío ---- */
+.empty{text-align:center;padding:60px 24px}
+.empty h2{margin:0 0 8px;font-size:21px;font-weight:700;letter-spacing:-.4px;text-transform:none;color:var(--txt)}
+.empty p{color:var(--muted);margin:0 auto 22px;max-width:440px;font-size:14px}
+
+/* ============================================================
+   PANEL LATERAL (tres barritas)
+   ============================================================ */
+.iconbtn{
+  background:transparent;border:1px solid transparent;color:var(--muted);
+  width:38px;height:38px;border-radius:11px;cursor:pointer;flex:none;
+  display:grid;place-items:center;
+  transition:color .18s var(--ease),background .18s var(--ease);
+}
+.iconbtn svg{width:19px;height:19px;stroke-width:1.9}
+.iconbtn:hover{color:var(--txt);background:var(--card-2)}
+.iconbtn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+
+.scrim{
+  position:fixed;inset:0;z-index:60;
+  background:rgba(2,6,12,.66);backdrop-filter:blur(6px);
+  opacity:0;pointer-events:none;transition:opacity .3s var(--ease);
+}
+.scrim.show{opacity:1;pointer-events:auto}
+
+.drawer{
+  position:fixed;top:0;left:0;bottom:0;z-index:61;width:min(400px,88vw);
+  background:var(--card);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;
+  transform:translateX(-100%);transition:transform .34s var(--ease);
+  overflow-y:auto;overscroll-behavior:contain;
+}
+.drawer.show{transform:none}
+.drawer-h{
+  position:sticky;top:0;z-index:2;background:var(--card);
+  display:flex;align-items:center;gap:10px;
+  padding:18px 20px 14px;border-bottom:1px solid var(--line-soft);
+}
+.drawer-h h2{margin:0;font-size:16px;font-weight:680;letter-spacing:-.01em;flex:1}
+.dsec{padding:18px 20px;border-bottom:1px solid var(--line-soft)}
+.dsec:last-child{border-bottom:0;padding-bottom:34px}
+.dsec > h3{
+  margin:0 0 14px;font-size:10px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:7px;
+}
+.dsec > h3 svg{width:13px;height:13px;stroke-width:2}
+
+/* filas de reparto del sueldo */
+.rep{display:flex;flex-direction:column;gap:2px}
+.rep-row{
+  display:grid;grid-template-columns:1fr 76px;gap:10px;align-items:center;
+  padding:9px 0;border-bottom:1px solid var(--line-soft);
+}
+.rep-row:last-child{border-bottom:0}
+.rep-row .rn{font-size:13.5px;font-weight:600;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rep-row .rn small{display:block;font-weight:400;font-size:11.5px;color:var(--dim);margin-top:1px}
+.rep-row input{text-align:right;padding:7px 9px;font-size:13.5px;font-variant-numeric:tabular-nums}
+.rep-tot{
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  margin-top:12px;padding-top:12px;border-top:1px solid var(--line);
+  font-size:12.5px;color:var(--muted);
+}
+.rep-tot b{font-size:15px;color:var(--txt);font-variant-numeric:tabular-nums}
+.rep-tot.over b{color:var(--bad)}
+
+/* lista de objetivos dentro del lápiz */
+.olist{display:flex;flex-direction:column;gap:6px;margin-bottom:4px}
+.orow{
+  display:flex;align-items:center;gap:11px;width:100%;text-align:left;cursor:pointer;
+  background:var(--card-2);border:1px solid transparent;border-radius:var(--r-sm);
+  padding:11px 13px;color:var(--txt);
+  transition:border-color .18s var(--ease),background .18s var(--ease);
+}
+.orow:hover{border-color:var(--line)}
+.orow.on{border-color:var(--acc);background:var(--acc-glow)}
+.orow .oi{flex:1;min-width:0}
+.orow .oi b{display:block;font-size:13.5px;font-weight:640;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.orow .oi small{display:block;font-size:11.5px;color:var(--dim);margin-top:2px}
+.orow .op{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--acc)}
+.orow.arch .oi b{opacity:.5}
+
+/* ---- modal ---- */
+.ov{position:fixed;inset:0;background:rgba(2,6,12,.66);backdrop-filter:blur(6px);
+  display:none;place-items:center;padding:20px;z-index:70}
+.ov.show{display:grid;animation:ovIn .22s var(--ease)}
+@keyframes ovIn{from{opacity:0}to{opacity:1}}
+.ov.show .modal{animation:mdIn .3s var(--ease)}
+@keyframes mdIn{from{opacity:0;transform:scale(.9) translateY(10px)}to{opacity:1;transform:none}}
+
+/* ---- modal de monto: el número enorme es lo único que importa ---- */
+.monto-mod{max-width:400px;text-align:center}
+.monto-mod .mb{padding:26px 24px 20px}
+.monto-tag{
+  display:inline-flex;align-items:center;gap:7px;margin-bottom:20px;
+  font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  padding:5px 11px;border-radius:99px;
+}
+.monto-tag svg{width:13px;height:13px;stroke-width:2.2}
+.monto-tag.in{color:var(--acc);background:var(--acc-glow)}
+.monto-tag.out{color:var(--bad);background:rgba(255,107,122,.11)}
+.monto-wrap{display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:6px}
+.monto-wrap .sg{font-size:34px;font-weight:600;color:var(--muted)}
+#montoIn{
+  border:0;background:transparent;padding:0;width:auto;max-width:6.2ch;
+  font-size:clamp(48px,15vw,68px);font-weight:700;letter-spacing:-.045em;
+  text-align:center;color:var(--txt);font-variant-numeric:tabular-nums;
+  -moz-appearance:textfield;
+}
+#montoIn:focus{outline:none;box-shadow:none}
+#montoIn::-webkit-outer-spin-button,#montoIn::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+#montoIn::placeholder{color:var(--card-3)}
+.monto-ars{font-size:13px;color:var(--muted);min-height:19px;font-variant-numeric:tabular-nums}
+.monto-chips{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin:20px 0 4px}
+.monto-chips button{
+  background:var(--card-2);border:1px solid var(--line);color:var(--muted);
+  border-radius:99px;padding:7px 13px;font-size:12.5px;font-weight:600;cursor:pointer;
+  font-variant-numeric:tabular-nums;transition:all .16s var(--ease);
+}
+.monto-chips button:hover{border-color:var(--acc);color:var(--txt)}
+.modal{background:var(--card);border:1px solid var(--line);border-radius:16px;
+  width:100%;max-width:480px;box-shadow:0 30px 70px -30px rgba(0,0,0,.9);
+  max-height:90vh;overflow-y:auto}
+.modal h3{margin:0;padding:17px 20px;font-size:16px;font-weight:700;border-bottom:1px solid var(--line-soft)}
+.modal .mb{padding:18px 20px}
+.modal .mf{display:flex;gap:9px;justify-content:flex-end;padding:0 20px 18px}
+.stack{display:flex;flex-direction:column;gap:13px}
+
+.hint{font-size:12px;color:var(--dim);line-height:1.5}
+.sep{height:1px;background:var(--line-soft);margin:16px 0}
+.warnbox{background:rgba(245,181,68,.09);border:1px solid rgba(245,181,68,.3);
+  border-radius:10px;padding:10px 13px;font-size:12.5px;color:var(--muted)}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--card-3);border-radius:5px}
+::-webkit-scrollbar-thumb:hover{background:var(--line)}
+
+/* ============================================================
+   CELULAR
+   ============================================================ */
+@media(max-width:700px){
+  .wrap{padding:16px 14px 96px}
+  .card-h{padding:15px 16px 12px}
+  .card-b{padding:6px 16px 18px}
+  .mgrid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .mv-list{margin:0 -16px -18px;padding:0 16px 8px}
+  .two{gap:12px}
+  #app > * + *{margin-top:12px}
+
+  /* la barra superior se compacta: los botones quedan solo con ícono */
+  .topbar{gap:8px}
+  .brand{font-size:15px}
+  #btnExport span,#btnTest span{display:none}
+  .chip{font-size:11.5px;padding:6px 9px}
+
+  /* carga rápida fija abajo, al alcance del pulgar */
+  .quick{
+    position:fixed;left:0;right:0;bottom:0;z-index:35;
+    background:var(--card);border-top:1px solid var(--line);
+    padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+    gap:8px;box-shadow:0 -12px 30px -18px rgba(0,0,0,.9);
+  }
+  .quick .qlbl,.quick .qsp{display:none}
+  .quick .btn{flex:1;padding:13px 12px;font-size:14.5px}
+  .quick .btn.big{flex:1.6}   /* Agregar es la acción principal: se lleva más ancho */
+  .flash{position:absolute;top:-30px;left:14px;background:var(--card);
+    padding:4px 10px;border-radius:8px;border:1px solid var(--line)}
+
+  /* objetivos táctiles cómodos: nada por debajo de ~32px de alto */
+  .btn.sm{padding:9px 12px}
+  .ord-btn{padding:9px}
+  .mv .x{padding:8px}
+  .seg button{padding:9px 11px}
+  .check input{width:20px;height:20px}
+  .tab{min-width:130px}
+  svg.chart{min-width:340px}
+}
+@media(max-width:420px){
+  .mgrid{grid-template-columns:1fr}
+  .figure.xl{font-size:40px}
+}
+</style>
+</head>
+<body>
+<div id="testBar"></div>
+
+<div class="wrap">
+
+  <!-- ============ TOPBAR ============ -->
+  <header class="topbar">
+    <button class="iconbtn" id="btnMenu" aria-label="Abrir menú" aria-expanded="false"></button>
+    <div class="brand"><span class="dot">$</span> Ahorro</div>
+    <div class="spacer"></div>
+    <span class="chip" id="globalChip" style="display:none"></span>
+    <button class="iconbtn" id="btnEdit" aria-label="Objetivos y ajustes"></button>
+  </header>
+
+  <!-- ============ CONTENIDO ============ -->
+  <div id="app"></div>
+</div>
+
+<!-- ============ PANEL LATERAL ============ -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true" aria-label="Menú"></aside>
+<input type="file" id="fileImport" accept="application/json,.json" style="display:none">
+
+<!-- ============ MODAL ============ -->
+<div class="ov" id="ov">
+  <div class="modal">
+    <h3 id="mTitle"></h3>
+    <div class="mb" id="mBody"></div>
+    <div class="mf" id="mFoot"></div>
+  </div>
+</div>
+
+<script>
+
+"use strict";
+
+/* ============================================================
+   1. UTILIDADES DE FECHA  (siempre en hora local, nunca UTC)
+   ============================================================ */
+const pad = n => String(n).padStart(2,'0');
+
+/** Date -> "AAAA-MM-DD" usando los componentes locales */
+function toKey(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+
+/** "AAAA-MM-DD" -> Date local a medianoche */
+function parseKey(s){ const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); }
+
+/** Nro. de día absoluto. Vía UTC para que el horario de verano no rompa las restas. */
+function dayNum(s){ const [y,m,d] = s.split('-').map(Number); return Date.UTC(y, m-1, d)/86400000; }
+
+/** Días entre dos claves (b - a) */
+function diffDays(a,b){ return dayNum(b) - dayNum(a); }
+
+function addDays(s,n){ const d = parseKey(s); d.setDate(d.getDate()+n); return toKey(d); }
+
+/**
+ * Fecha de "hoy". En modo prueba devuelve la fecha simulada, y con eso toda la app
+ * (días restantes, ritmo semanal, proyección, sueldos pendientes) viaja en el tiempo
+ * sin tener que tocar ningún otro cálculo.
+ */
+let fakeToday = null;
+function today(){ return fakeToday || toKey(new Date()); }
+
+/**
+ * Black Friday: el viernes siguiente al cuarto jueves de noviembre.
+ * No es "el último viernes": divergen cuando el 1/11 cae jueves (ej. 2029).
+ */
+function blackFriday(anio){
+  const d = new Date(anio, 10, 1);
+  d.setDate(1 + (4 - d.getDay() + 7) % 7 + 21);  // cuarto jueves
+  d.setDate(d.getDate() + 1);                    // el viernes que le sigue
+  return toKey(d);
+}
+
+/** Fechas comerciales que puedo calcular con certeza. El resto las carga el usuario. */
+function fechasConocidas(desde, hasta){
+  const out = [];
+  for(let a = parseKey(desde).getFullYear(); a <= parseKey(hasta).getFullYear(); a++){
+    out.push({ id:'bf'+a, name:'Black Friday', date: blackFriday(a), fija:true });
+    out.push({ id:'nav'+a, name:'Navidad',     date: a+'-12-25',      fija:true });
+  }
+  return out.filter(f => f.date > desde && f.date <= hasta);
+}
+
+/** "AAAA-MM" de una fecha */
+function mesDe(s){ return s.slice(0,7); }
+
+/** Suma n meses a un "AAAA-MM" */
+function addMes(ym, n){
+  const [y,m] = ym.split('-').map(Number);
+  const d = new Date(y, m-1+n, 1);
+  return d.getFullYear()+'-'+pad(d.getMonth()+1);
+}
+
+/** Día `dia` del mes `ym`, recortado si el mes es más corto (31 en febrero → 28/29) */
+function diaDelMes(ym, dia){
+  const [y,m] = ym.split('-').map(Number);
+  const ultimo = new Date(y, m, 0).getDate();
+  return ym+'-'+pad(Math.min(dia, ultimo));
+}
+
+/**
+ * Primer mes que cuenta para un recurrente recién creado o reactivado: si el día de
+ * cobro de este mes ya pasó, ese sueldo ya se fue a otra cosa — arranca el que viene.
+ */
+function mesDesdeRec(dia){
+  const ym = mesDe(today());
+  return diaDelMes(ym, dia) < today() ? addMes(ym, 1) : ym;
+}
+
+/** dd/mm/aaaa */
+function fmtDate(s){ if(!s) return '—'; const [y,m,d] = s.split('-'); return d+'/'+m+'/'+y; }
+
+/** dd/mm */
+function fmtShort(s){ const [,m,d] = s.split('-'); return d+'/'+m; }
+
+/** Lunes de la semana que contiene a s */
+function weekStart(s){
+  const d = parseKey(s);
+  const dow = (d.getDay()+6)%7;      // 0 = lunes
+  d.setDate(d.getDate()-dow);
+  return toKey(d);
+}
+
+const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+function fmtLong(s){
+  if(!s) return '—';
+  const [y,m,d] = s.split('-');
+  return Number(d)+' '+MESES[Number(m)-1]+' '+y;
+}
+
+/* ============================================================
+   2. FORMATO DE NÚMEROS
+   ============================================================ */
+const nfUSD = new Intl.NumberFormat('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const nfUSD0 = new Intl.NumberFormat('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0});
+const nfARS = new Intl.NumberFormat('es-AR',{minimumFractionDigits:0,maximumFractionDigits:0});
+
+const usd  = n => nfUSD.format(n||0);
+const usd0 = n => nfUSD0.format(n||0);
+
+/** Equivalente en pesos según la cotización guardada. '' si no hay. */
+function ars(n){
+  const r = state.settings.rate.value;
+  if(!r || !isFinite(n)) return '';
+  return '$'+nfARS.format(Math.round(n*r));
+}
+
+function esc(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+
+/* ---- íconos: trazos sueltos, se pintan con currentColor. Nada de emojis. ---- */
+const ICONS = {
+  trend:  '<path d="M3 17 9 11l4 4 8-8"/><path d="M17 7h4v4"/>',
+  target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>',
+  wallet: '<path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H18v3"/><path d="M3 7.5V17a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H5.5"/><circle cx="16.5" cy="14" r="1.2"/>',
+  ledger: '<path d="M5 3h11l4 4v14H5z"/><path d="M16 3v4h4"/><path d="M9 12h7M9 16h7"/>',
+  chart:  '<path d="M4 20V10M10 20V5M16 20v-7M22 20H2"/>',
+  spark:  '<path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>',
+  check:  '<circle cx="12" cy="12" r="9"/><path d="M8.5 12.2l2.4 2.4 4.6-4.9"/>',
+  alert:  '<circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5"/><circle cx="12" cy="16.4" r=".9" fill="currentColor" stroke="none"/>',
+  clock:  '<circle cx="12" cy="12" r="9"/><path d="M12 7v5.3l3.4 2"/>',
+  flag:   '<path d="M5 21V4"/><path d="M5 5h11l-2 3.5L16 12H5z"/>',
+  plus:   '<path d="M12 5v14M5 12h14"/>',
+  x:      '<path d="M6 6l12 12M18 6L6 18"/>',
+  pencil: '<path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17z"/>',
+  undo:   '<path d="M4 10h9a5 5 0 0 1 0 10h-3"/><path d="M8 6l-4 4 4 4"/>',
+  up:     '<path d="M6 15l6-6 6 6"/>',
+  down:   '<path d="M6 9l6 6 6-6"/>',
+  gear:   '<circle cx="12" cy="12" r="3"/><path d="M12 2.5v2.6M12 18.9v2.6M4.2 7.2l2.2 1.3M17.6 15.5l2.2 1.3M4.2 16.8l2.2-1.3M17.6 8.5l2.2-1.3"/>',
+  sun:    '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5.6 5.6 4.2 4.2M19.8 19.8l-1.4-1.4M18.4 5.6l1.4-1.4M4.2 19.8l1.4-1.4"/>',
+  down2:  '<path d="M12 3v12"/><path d="M7.5 11.5 12 16l4.5-4.5"/><path d="M4 20h16"/>',
+  up2:    '<path d="M12 16V4"/><path d="M7.5 8.5 12 4l4.5 4.5"/><path d="M4 20h16"/>',
+  beaker: '<path d="M9 3v6.5L4.5 18A2 2 0 0 0 6.3 21h11.4a2 2 0 0 0 1.8-3L15 9.5V3"/><path d="M8 3h8"/><path d="M6.8 15h10.4"/>',
+  menu:   '<path d="M3.5 6.5h17M3.5 12h17M3.5 17.5h17"/>',
+  pct:    '<path d="M19 5 5 19"/><circle cx="7.5" cy="7.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/>',
+  minus:  '<path d="M5 12h14"/>',
+  archive:'<path d="M3 7h18v3H3z"/><path d="M5 10v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9"/><path d="M10 14h4"/>',
+  trash:  '<path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/>'
+};
+/** Devuelve un <svg> inline. size en px. */
+function ico(name, size){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" '
+       + 'stroke-linejoin="round" aria-hidden="true"'
+       + (size ? ' style="width:'+size+'px;height:'+size+'px"' : '') + '>'
+       + (ICONS[name]||'') + '</svg>';
+}
+
+/** Cifra grande con su unidad chiquita al costado, como en la referencia */
+function fig(valor, unidad, clase){
+  return '<span class="figure '+(clase||'')+'">'+valor
+       + (unidad ? '<span class="unit">'+unidad+'</span>' : '') + '</span>';
+}
+
+/** Sparkline: los últimos `dias` de saldo acumulado, sin ejes ni ruido */
+function sparkline(o, hoy, dias){
+  const ini = addDays(hoy, -dias);
+  const movs = [...o.movements].filter(m => m.date <= hoy).sort((a,b)=>a.date.localeCompare(b.date));
+  let acc = 0;
+  const serie = [];
+  movs.forEach(m => { acc += m.amount; if(m.date >= ini) serie.push([m.date, acc]); });
+  const base = movs.filter(m => m.date < ini).reduce((s,m)=>s+m.amount, 0);
+  const pts = [[ini, base], ...serie, [hoy, acc]];
+  if(pts.length < 2) return '';
+  const vals = pts.map(p=>p[1]);
+  const lo = Math.min(...vals), hi = Math.max(...vals), rango = (hi-lo) || 1;
+  const W = 100, H = 26;
+  const X = k => (Math.max(0, diffDays(ini,k)) / dias) * W;
+  const Y = v => H - 3 - ((v-lo)/rango) * (H-6);
+  const d = pts.map((p,i) => (i?'L':'M') + X(p[0]).toFixed(1) + ' ' + Y(p[1]).toFixed(1)).join(' ');
+  const fin = pts[pts.length-1];
+  const sube = fin[1] >= pts[0][1];
+  const col = sube ? 'var(--acc)' : 'var(--bad)';
+  return `<div class="spark"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <path d="${d}" fill="none" stroke="${col}" stroke-width="1.6" vector-effect="non-scaling-stroke"
+          stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${X(fin[0]).toFixed(1)}" cy="${Y(fin[1]).toFixed(1)}" r="2" fill="${col}"
+            vector-effect="non-scaling-stroke"/>
+  </svg></div>`;
+}
+
+/** Días -> texto humano ("2 meses y 4 días") */
+function humanDays(n){
+  n = Math.round(n);
+  if(n <= 0) return 'hoy';
+  if(n === 1) return '1 día';
+  if(n < 45) return n+' días';
+  const meses = Math.floor(n/30.44), resto = Math.round(n - meses*30.44);
+  let t = meses+(meses===1?' mes':' meses');
+  if(resto >= 1) t += ' y '+resto+(resto===1?' día':' días');
+  return t;
+}
+
+/* ============================================================
+   3. ESTADO Y PERSISTENCIA
+   ============================================================ */
+const KEY_REAL   = 'ahorro_objetivos_v1';
+const KEY_PRUEBA = 'ahorro_prueba_v1';
+
+// Acceso protegido: hay navegadores y configuraciones de privacidad donde tocar
+// localStorage lanza una excepción. Sin esto, la app entera no arranca.
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); return true; }catch(e){ return false; } }
+
+/**
+ * El modo prueba usa su propia caja de datos: nada de lo que hagas ahí toca lo real.
+ * A propósito NO se recuerda entre sesiones: abrir el archivo siempre te deja en modo real.
+ * Si se recordara, podrías cargar ahorros de verdad en el sandbox sin darte cuenta.
+ * Los datos de prueba sí quedan guardados, así que no perdés lo que estabas probando.
+ */
+let testMode = false;
+const KEY = () => testMode ? KEY_PRUEBA : KEY_REAL;
+
+/** Categorías de origen/destino de la plata */
+const CATS_IN  = ['Sueldo','Changa','Venta','Regalo','Otro'];
+const CATS_OUT = ['Gasto','Emergencia','Compra','Otro'];
+
+const DEFAULT_STATE = {
+  version: 3,
+  settings: {
+    theme: 'dark',
+    rate: { value: null, source: null, fetchedAt: null },   // ARS por USD (venta)
+    fakeToday: null,                                         // solo se usa en modo prueba
+    // El sueldo es uno solo y se reparte entre objetivos por porcentaje.
+    // Antes vivía dentro de cada objetivo; normalize() migra los datos viejos.
+    sueldo: { dia: 5, monto: 0, activo: false, hechos: [] }
+  },
+  objectives: [],
+  activeId: null
+};
+
+let state = load();
+
+function load(){
+  try{
+    const raw = lsGet(KEY());
+    const s = raw ? normalize(JSON.parse(raw)) : structuredClone(DEFAULT_STATE);
+    fakeToday = testMode ? (s.settings.fakeToday || null) : null;
+    return s;
+  }catch(e){
+    console.warn('No se pudo leer el guardado:', e);
+    fakeToday = null;
+    return structuredClone(DEFAULT_STATE);
+  }
+}
+
+/** Rellena campos faltantes para que un JSON viejo o importado no rompa nada */
+function normalize(s){
+  const base = structuredClone(DEFAULT_STATE);
+  if(!s || typeof s !== 'object') return base;
+  const out = Object.assign(base, {
+    version: 2,
+    settings: Object.assign(base.settings, s.settings || {}),
+    objectives: Array.isArray(s.objectives) ? s.objectives : [],
+    activeId: s.activeId || null
+  });
+  out.settings.rate = Object.assign({value:null,source:null,fetchedAt:null}, (s.settings&&s.settings.rate)||{});
+  out.settings.fakeToday = (s.settings && s.settings.fakeToday) || null;
+  const sg = (s.settings && s.settings.sueldo) || null;
+  out.settings.sueldo = {
+    dia: Math.max(1, Math.min(31, Number(sg && sg.dia) || 5)),
+    monto: Number(sg && sg.monto) || 0,
+    activo: !!(sg && sg.activo),
+    hechos: Array.isArray(sg && sg.hechos) ? sg.hechos.map(String) : []
+  };
+  out.objectives = out.objectives.map(o => ({
+    id: o.id || uid(),
+    name: String(o.name || 'Objetivo'),
+    targetDate: o.targetDate || addDays(today(), 90),
+    startDate: o.startDate || today(),
+    archived: !!o.archived,
+    // qué porcentaje del sueldo global va a este objetivo
+    pctSueldo: Math.max(0, Math.min(100, Number(o.pctSueldo) || 0)),
+    // se conserva solo para poder migrar; ya no se usa para calcular
+    recurrente: o.recurrente ? {
+      dia: Math.max(1, Math.min(31, Number(o.recurrente.dia) || 1)),
+      monto: Number(o.recurrente.monto) || 0,
+      activo: o.recurrente.activo !== false,
+      desde: o.recurrente.desde || mesDe(o.startDate || today()),
+      hechos: Array.isArray(o.recurrente.hechos) ? o.recurrente.hechos.map(String) : []
+    } : null,
+    // fechas de oportunidad propias (las de Black Friday / Navidad se calculan solas)
+    fechas: (Array.isArray(o.fechas)?o.fechas:[]).map(f => ({
+      id: f.id || uid(), name: String(f.name || 'Fecha'), date: f.date || today()
+    })),
+    items: (Array.isArray(o.items)?o.items:[]).map((it,i) => ({
+      id: it.id || uid(),
+      name: String(it.name || 'Ítem'),
+      price: Number(it.price) || 0,
+      order: Number.isFinite(it.order) ? it.order : i,
+      bought: !!it.bought,
+      boughtDate: it.boughtDate || null
+    })),
+    movements: (Array.isArray(o.movements)?o.movements:[]).map(m => ({
+      id: m.id || uid(),
+      date: m.date || today(),
+      amount: Number(m.amount) || 0,          // + aporte / − retiro
+      note: String(m.note || ''),
+      cat: String(m.cat || ''),               // Sueldo, Changa, Venta, Regalo, Gasto...
+      excludeFromRate: !!m.excludeFromRate,   // no cuenta para el promedio semanal
+      itemId: m.itemId || null,               // si vino de marcar un ítem como comprado
+      recYm: m.recYm || null,                 // si vino de confirmar el sueldo de ese mes
+      // etiqueta "te adelantó/atrasó X días" congelada al momento de la carga,
+      // para que comprar un ítem o editar precios no reescriba la historia
+      diasPlan: Number.isFinite(m.diasPlan) ? m.diasPlan : null
+    }))
+  }));
+  // ---- migración: el sueldo pasó de vivir en cada objetivo a ser uno global
+  // repartido por porcentaje. Sumamos los montos viejos y repartimos proporcional.
+  const viejos = out.objectives.filter(o => o.recurrente && o.recurrente.monto > 0);
+  if(!out.settings.sueldo.monto && viejos.length){
+    const total = viejos.reduce((s,o) => s + o.recurrente.monto, 0);
+    const activo = viejos.some(o => o.recurrente.activo);
+    out.settings.sueldo = {
+      dia: viejos[0].recurrente.dia,
+      monto: total,
+      activo,
+      // los meses ya confirmados en cualquier objetivo se dan por hechos
+      hechos: [...new Set(viejos.flatMap(o => o.recurrente.hechos))]
+    };
+    viejos.forEach(o => { o.pctSueldo = Math.round(o.recurrente.monto / total * 100); });
+  }
+  out.objectives.forEach(o => { delete o.recurrente; });
+
+  if(!out.objectives.some(o => o.id === out.activeId)){
+    const first = out.objectives.find(o => !o.archived) || out.objectives[0];
+    out.activeId = first ? first.id : null;
+  }
+  return out;
+}
+
+/* ---- sueldo global ---- */
+/** Lo que le toca a un objetivo por mes, en USD */
+function cuotaSueldo(o){
+  const s = state.settings.sueldo;
+  if(!s.activo || s.monto <= 0 || !o) return 0;
+  return s.monto * (o.pctSueldo || 0) / 100;
+}
+/** Suma de porcentajes ya asignados, opcionalmente ignorando un objetivo */
+function pctAsignado(exceptoId){
+  return state.objectives
+    .filter(o => o.id !== exceptoId)
+    .reduce((s,o) => s + (o.pctSueldo || 0), 0);
+}
+/** Meses de sueldo que ya vencieron y todavía no confirmaste (es global) */
+function sueldosPendientes(){
+  const s = state.settings.sueldo, hoy = today(), out = [];
+  if(!s.activo || s.monto <= 0) return out;
+  const arranque = state.objectives.reduce((min,o) =>
+    (!min || o.startDate < min) ? o.startDate : min, null) || hoy;
+  let ym = mesDe(arranque);
+  const limite = mesDe(hoy);
+  while(ym <= limite){
+    const f = diaDelMes(ym, s.dia);
+    if(diffDays(f, hoy) >= 0 && f >= arranque && !s.hechos.includes(ym)){
+      out.push({ ym, fecha: f, monto: s.monto });
+    }
+    ym = addMes(ym, 1);
+  }
+  return out;
+}
+/** Próxima fecha de cobro sin confirmar dentro de (desde, hasta]. null si no hay. */
+function proximoCobro(desde, hasta){
+  const s = state.settings.sueldo;
+  if(!s.activo || s.monto <= 0) return null;
+  let ym = mesDe(desde);
+  const limite = mesDe(hasta);
+  while(ym <= limite){
+    const f = diaDelMes(ym, s.dia);
+    if(f > desde && f <= hasta && !s.hechos.includes(ym)) return f;
+    ym = addMes(ym, 1);
+  }
+  return null;
+}
+
+let avisoGuardado = false;
+function save(){
+  if(!lsSet(KEY(), JSON.stringify(state)) && !avisoGuardado){
+    avisoGuardado = true;   // una sola vez, no en cada tecla
+    alert('Este navegador no está dejando guardar los datos.\n\n'
+        + 'Vas a poder usar la app, pero al cerrarla se pierde todo. '
+        + 'Usá el botón Backup para bajarte el archivo.');
+  }
+}
+
+/** Entra o sale del modo prueba, cambiando de caja de datos */
+function setTestMode(on){
+  testMode = !!on;
+  document.title = testMode ? 'PRUEBA · Ahorro' : 'Ahorro · Objetivos';
+  state = load();
+  document.documentElement.dataset.theme = state.settings.theme || 'dark';
+  chartOffset = 0; zoomDays = null; zoomStart = 0; yShift = 0;
+  simA = null; simB = null;
+  renderRate(); renderTabs(); render(); renderTestBar();
+}
+
+/** Fija la fecha simulada (solo tiene efecto en modo prueba) */
+function setFakeToday(k){
+  if(!testMode) return;
+  fakeToday = k || null;
+  state.settings.fakeToday = fakeToday;
+  save(); renderTabs(); render(); renderTestBar();
+}
+
+function activeObj(){ return state.objectives.find(o => o.id === state.activeId) || null; }
+
+/* ============================================================
+   4. CÁLCULOS
+   ============================================================ */
+
+/**
+ * Todo el motor del programa. Devuelve las métricas de un objetivo.
+ * Convención: los aportes son montos positivos y los retiros negativos.
+ */
+function compute(o){
+  const hoy = today();
+
+  const pending = o.items.filter(i => !i.bought).sort((a,b) => a.order - b.order);
+  const bought  = o.items.filter(i =>  i.bought);
+
+  const total = pending.reduce((s,i) => s + i.price, 0);
+  const saldo = o.movements.reduce((s,m) => s + m.amount, 0);
+  const falta = Math.max(0, total - saldo);
+  const sobra = Math.max(0, saldo - total);
+  const pct   = total > 0 ? Math.min(1, Math.max(0, saldo/total)) : 0;
+
+  // Días que quedan: hoy no cuenta, el día objetivo sí.
+  const diasRestantes = diffDays(hoy, o.targetDate);
+  const vencido = diasRestantes < 0;
+  const cumplido = total > 0 && falta <= 0.0001;
+
+  const reqDia = diasRestantes > 0 ? falta / diasRestantes : (falta > 0 ? Infinity : 0);
+
+  // ---- ritmo real
+  // El origen es lo más viejo entre el arranque del objetivo y el primer movimiento,
+  // para que los movimientos cargados con fecha anterior también cuenten al ritmo.
+  const origen = o.movements.length
+    ? [o.startDate, ...o.movements.map(m => m.date)].sort()[0]
+    : o.startDate;
+
+  // La ventana se ancla en tus propios movimientos, no en semanas de calendario.
+  // Arranca EN un aporte viejo (que no se suma: marca el inicio del ciclo) y llega hasta hoy.
+  // Así, si metés una vez por mes, mide un mes completo y no importa dónde caiga el lunes.
+  const MIN_VENTANA = 28;    // nunca menos de 4 semanas, para que no salte con cada aporte
+  const MAX_VENTANA = 120;   // nunca más de 4 meses, para que reaccione si frenás
+
+  const cuentan = o.movements
+    .filter(m => !m.excludeFromRate && m.date <= hoy)
+    .sort((a,b) => a.date.localeCompare(b.date));
+
+  const curWeek = weekStart(hoy);
+  const semanaActual = o.movements
+    .filter(m => !m.excludeFromRate && m.date >= curWeek && m.date <= hoy)
+    .reduce((s,m) => s + m.amount, 0);
+
+  let ritmoSemana = null, ritmoDia = null, ritmoBase = '', ventanaIni = null, ventanaDias = 0;
+  // Si el borde de la ventana es un aporte, ese aporte no se suma (marca el inicio del
+  // ciclo). Si el borde es un día cualquiera, todo lo que cae en él sí cuenta.
+  let anclaEsAporte = false;
+
+  const historia = diffDays(origen, hoy);   // cuántos días de datos hay en total
+
+  if(historia < 7){
+    // Con menos de una semana de historia cualquier "ritmo diario" es una
+    // extrapolación salvaje de dos o tres días. Mejor no inventar un número.
+    ventanaIni = origen;
+    ventanaDias = Math.max(1, historia);
+    ritmoBase = 'todavía no hay una semana de historia';
+  }else{
+    if(cuentan.length >= 2){
+      // agrandamos hacia atrás hasta tener al menos 28 días y 2 aportes
+      for(let i = cuentan.length - 2; i >= 0; i--){
+        ventanaIni = cuentan[i].date;
+        const span = diffDays(ventanaIni, hoy);
+        const n = cuentan.length - 1 - i;
+        if((span >= MIN_VENTANA && n >= 2) || span >= MAX_VENTANA) break;
+      }
+      anclaEsAporte = ventanaIni !== null;
+    }
+    // Piso real: si el ancla quedó a menos de MIN_VENTANA (o no hubo ancla), la
+    // ventana pasa a ser de días fijos. Su borde ya no es un aporte, así que cuenta.
+    if(ventanaIni === null || diffDays(ventanaIni, hoy) < MIN_VENTANA){
+      ventanaIni = historia >= MIN_VENTANA ? addDays(hoy, -MIN_VENTANA) : origen;
+      anclaEsAporte = false;
+    }
+    if(diffDays(ventanaIni, hoy) > MAX_VENTANA){
+      ventanaIni = addDays(hoy, -MAX_VENTANA);
+      anclaEsAporte = false;
+    }
+
+    ventanaDias = Math.max(1, diffDays(ventanaIni, hoy));
+    const netoVentana = cuentan
+      .filter(m => anclaEsAporte ? m.date > ventanaIni : m.date >= ventanaIni)
+      .reduce((s,m) => s + m.amount, 0);
+
+    if(cuentan.length && netoVentana !== 0){
+      ritmoDia = netoVentana / ventanaDias;
+      ritmoSemana = ritmoDia * 7;
+      ritmoBase = 'últimos ' + ventanaDias + ' días'
+        + (anclaEsAporte ? ' · desde tu aporte del ' + fmtShort(ventanaIni) : '');
+    }else if(cuentan.length){
+      // hay movimientos pero ninguno dentro de la ventana: frenaste de verdad
+      ritmoDia = 0; ritmoSemana = 0;
+      ritmoBase = 'sin aportes en los últimos ' + ventanaDias + ' días';
+    }
+  }
+
+  // se mantiene por compatibilidad con el resto de la app
+  const semanas = [];
+
+  // ---- sueldos programados
+  // Los confirmados se guardan con excludeFromRate, así que el ritmo de arriba mide
+  // solo tu ahorro variable. Los futuros se suman aparte en la proyección.
+  // La cuota que le toca a ESTE objetivo del sueldo global, según su porcentaje.
+  const cuota = cuotaSueldo(o);
+  const rec = cuota > 0 ? { dia: state.settings.sueldo.dia, monto: cuota } : null;
+
+  /** Suma de sueldos previstos con fecha en (desde, hasta] */
+  function sueldosEntre(desde, hasta){
+    if(!rec || diffDays(desde, hasta) <= 0) return 0;
+    let n = 0, ym = mesDe(desde);
+    const limite = mesDe(hasta);
+    while(ym <= limite){
+      const f = diaDelMes(ym, rec.dia);
+      if(f > desde && f <= hasta) n++;
+      ym = addMes(ym, 1);
+    }
+    return n * rec.monto;
+  }
+
+  // los pendientes son globales, no de este objetivo
+  const pendientes = rec ? sueldosPendientes() : [];
+
+  // ---- proyección: ritmo variable + sueldos que van cayendo.
+  // El ritmo va con su signo: si venís drenando, la fecha lo tiene que reflejar.
+  // Si el neto no converge, el bucle no encuentra fecha y se muestra "no llegás".
+  const proyectar = (k) => saldo + (ritmoDia || 0) * Math.max(0, diffDays(hoy,k)) + sueldosEntre(hoy, k);
+
+  let fechaEstim = null, diasEstim = null, llegaAntes = null;
+  if(cumplido){
+    fechaEstim = 'cumplido';
+  }else if((ritmoDia && ritmoDia > 0) || rec){
+    // avanzamos día a día porque los sueldos son saltos, no una pendiente pareja
+    for(let d = 1; d <= 3650; d++){
+      if(proyectar(addDays(hoy,d)) >= total - 0.0001){ diasEstim = d; break; }
+    }
+    if(diasEstim != null){
+      fechaEstim = addDays(hoy, diasEstim);
+      llegaAntes = diffDays(fechaEstim, o.targetDate);   // + = llega antes de la meta
+    }
+  }
+
+  // ---- fechas de oportunidad: dónde vas a estar parado en cada una
+  const fechasClave = [...fechasConocidas(hoy, o.targetDate),
+                       ...(o.fechas||[]).filter(f => f.date > hoy && f.date <= o.targetDate)]
+    .sort((a,b) => a.date.localeCompare(b.date))
+    .map(f => {
+      const proy = proyectar(f.date);
+      return {
+        ...f,
+        proy,
+        pct: total > 0 ? Math.min(1, Math.max(0, proy/total)) : 0,
+        falta: Math.max(0, total - proy),
+        alcanza: proy >= total - 0.0001,
+        dias: diffDays(hoy, f.date)
+      };
+    });
+
+  // sueldos que entran antes de la meta, y cuánto te queda por juntar aparte de eso
+  const sueldosHastaMeta = sueldosEntre(hoy, o.targetDate);
+  const faltaExtra = Math.max(0, falta - sueldosHastaMeta);
+  const reqDiaExtra = diasRestantes > 0 ? faltaExtra / diasRestantes : 0;
+
+  // ---- plan ideal y semáforo
+  const planTotalDias = Math.max(1, diffDays(o.startDate, o.targetDate));
+  const saldoInicial = o.movements
+    .filter(m => diffDays(m.date, o.startDate) >= 0)
+    .reduce((s,m) => s + m.amount, 0);
+  const transcurridos = Math.min(planTotalDias, Math.max(0, diffDays(o.startDate, hoy)));
+  const planDia = (total - saldoInicial) / planTotalDias;
+  const deberia = saldoInicial + planDia * transcurridos;
+  const desvio = saldo - deberia;
+  const diasVentaja = planDia > 0 ? desvio / planDia : 0;
+
+  // La vara del semáforo tiene que ser la misma que usa la proyección: si hay sueldo
+  // recurrente, lo que importa es lo que falta APARTE de los sueldos previstos.
+  const reqComparable = rec ? reqDiaExtra : reqDia;
+  const sueldoCubre = !!rec && sueldosHastaMeta >= falta - 0.0001;
+
+  let semaforo = 'ok';
+  if(!cumplido && total > 0){
+    if(desvio < -0.005){
+      semaforo = (sueldoCubre || (ritmoDia != null && ritmoDia >= reqComparable)) ? 'mid' : 'bad';
+    }else if(ritmoDia != null && ritmoDia <= 0 && falta > 0 && !sueldoCubre){
+      // al día con el plan, pero frenaste: no puede leerse como verde
+      // (salvo que los sueldos previstos ya cubran solos lo que falta)
+      semaforo = 'mid';
+    }
+  }
+
+  // ---- cascada: se llena un ítem entero antes de empezar el siguiente
+  let resto = Math.max(0, saldo);
+  const cascada = pending.map(i => {
+    const cubierto = Math.min(resto, i.price);
+    resto -= cubierto;
+    return { item:i, cubierto, pct: i.price > 0 ? cubierto/i.price : 1, listo: cubierto >= i.price - 0.0001 };
+  });
+
+  const totalOriginal = total + bought.reduce((s,i) => s + i.price, 0);
+
+  return {
+    hoy, pending, bought, total, totalOriginal, saldo, falta, sobra, pct,
+    diasRestantes, vencido, cumplido, reqDia,
+    semanas, semanaActual, ritmoSemana, ritmoDia, ritmoBase, ventanaIni, ventanaDias,
+    fechaEstim, diasEstim, llegaAntes,
+    deberia, desvio, diasVentaja, semaforo, planDia, saldoInicial, planTotalDias,
+    cascada,
+    rec, pendientes, fechasClave, sueldosHastaMeta, faltaExtra, reqDiaExtra,
+    reqComparable, sueldoCubre, proyectar
+  };
+}
+
+/**
+ * Cuántos días de plan cubre un monto. Se mide contra el ritmo del plan original,
+ * no contra el requerido de hoy, para que la etiqueta de un movimiento viejo
+ * no cambie con el paso del tiempo.
+ */
+function diasQueMueve(monto, c){
+  if(!c.planDia || c.planDia <= 0) return null;
+  const d = monto / c.planDia;
+  if(Math.abs(d) < 0.5) return null;
+  return Math.round(d);
+}
+
+/* ============================================================
+   5. COTIZACIÓN DEL DÓLAR (BNA venta)
+   ============================================================ */
+async function fetchRate(){
+  const fuentes = [
+    { url:'https://dolarapi.com/v1/dolares/oficial',
+      pick: j => ({ v: Number(j.venta), t: j.fechaActualizacion }), src:'BNA' },
+    { url:'https://api.bluelytics.com.ar/v2/latest',
+      pick: j => ({ v: Number(j.oficial.value_sell), t: j.last_update }), src:'oficial' }
+  ];
+  for(const f of fuentes){
+    try{
+      const ctrl = new AbortController();
+      const to = setTimeout(() => ctrl.abort(), 7000);
+      const res = await fetch(f.url, { signal: ctrl.signal, cache:'no-store' });
+      clearTimeout(to);
+      if(!res.ok) continue;
+      const j = await res.json();
+      const { v, t } = f.pick(j);
+      if(!v || !isFinite(v) || v <= 0) continue;
+      state.settings.rate = { value: v, source: f.src, fetchedAt: t || new Date().toISOString() };
+      save(); renderRate(); render();
+      return true;
+    }catch(e){ /* probamos la siguiente */ }
+  }
+  renderRate();   // se queda con la última guardada o pide que la cargues a mano
+  return false;
+}
+
+function renderRate(){
+  const r = state.settings.rate;
+  const val = document.getElementById('rateVal');
+  const src = document.getElementById('rateSrc');
+  const dot = document.getElementById('rateDot');
+  // la cotización se mudó al panel lateral: si el panel está cerrado no hay nada que pintar
+  if(!val || !src || !dot){
+    if(drawer && drawer.classList.contains('show')) renderDrawer();
+    return;
+  }
+  if(!r.value){
+    val.textContent = 'sin dato';
+    src.textContent = '· cargala a mano';
+    dot.className = 'live stale';
+    return;
+  }
+  val.textContent = '$'+nfARS.format(Math.round(r.value));
+  let edad = '';
+  if(r.fetchedAt){
+    const d = new Date(r.fetchedAt);
+    if(!isNaN(d)) edad = ' · '+fmtDate(toKey(d));
+  }
+  const stale = r.fetchedAt ? (Date.now() - new Date(r.fetchedAt).getTime()) > 3*86400000 : true;
+  src.textContent = (r.source === 'manual' ? '· a mano' : '· '+(r.source||'auto')) + edad;
+  dot.className = 'live' + (stale ? ' stale' : '');
+}
+
+/* ============================================================
+   6. MODAL
+   ============================================================ */
+const ov = document.getElementById('ov');
+let onCloseModal = null;
+
+function modal(title, bodyHTML, buttons, afterOpen, cls){
+  const box = ov.querySelector('.modal');
+  box.className = 'modal' + (cls ? ' '+cls : '');
+  const t = document.getElementById('mTitle');
+  t.textContent = title;
+  t.style.display = title ? '' : 'none';
+  document.getElementById('mBody').innerHTML = bodyHTML;
+  const foot = document.getElementById('mFoot');
+  foot.innerHTML = '';
+  (buttons||[]).forEach(b => {
+    const el = document.createElement('button');
+    el.className = 'btn ' + (b.cls||'ghost');
+    el.textContent = b.label;
+    el.onclick = b.onClick;
+    foot.appendChild(el);
+  });
+  ov.classList.add('show');
+  if(afterOpen) afterOpen();
+}
+function closeModal(){ ov.classList.remove('show'); onCloseModal = null; }
+ov.addEventListener('mousedown', e => { if(e.target === ov) closeModal(); });
+document.addEventListener('keydown', e => { if(e.key === 'Escape' && ov.classList.contains('show')) closeModal(); });
+
+/* ============================================================
+   7. RENDER — TABS
+   ============================================================ */
+/**
+ * Las pestañas se fueron al lápiz. Esto quedó como el resumen global de la barra
+ * superior; se sigue llamando renderTabs para no tocar las decenas de llamadas.
+ */
+function renderTabs(){
+  const chip = document.getElementById('globalChip');
+  const activos = state.objectives.filter(o => !o.archived);
+  if(activos.length > 1){
+    const t = activos.reduce((s,o) => s + o.movements.reduce((a,m) => a+m.amount, 0), 0);
+    chip.style.display = '';
+    chip.innerHTML = `Total <b class="num">${usd0(t)} USD</b>`;
+  }else{
+    chip.style.display = 'none';
+  }
+}
+
+/* ============================================================
+   8. RENDER — VISTA PRINCIPAL
+   ============================================================ */
+function render(){
+  const app = document.getElementById('app');
+  const o = activeObj();
+
+  if(!o){
+    app.innerHTML = `<div class="card"><div class="card-b empty">
+      <h2>Todavía no tenés ningún objetivo</h2>
+      <p>Creá uno con su fecha meta, cargale adentro las cosas que querés comprar,
+         y la app te va a decir cuántos dólares por día necesitás juntar para llegar.</p>
+      <button class="btn primary" id="firstBtn">+ Crear mi primer objetivo</button>
+    </div></div>`;
+    document.getElementById('firstBtn').onclick = () => objModal(null);
+    return;
+  }
+
+  const c = compute(o);
+  app.innerHTML =
+      heroHTML(o,c)
+    + itemsHTML(o,c)
+    + movHTML(o,c)
+    + `<div id="chartBox">${chartHTML(o,c)}</div>`;
+
+  wire(o,c);
+}
+
+/* ---- hero + métricas ---- */
+function heroHTML(o,c){
+  const R = 78, C = 2*Math.PI*R;
+  const dash = C * c.pct;
+
+  // proyección
+  let projVal, projSub, projCls = '';
+  if(c.cumplido){
+    projVal = '¡Listo!'; projSub = 'objetivo cumplido'; projCls = 'acc';
+  }else if(c.fechaEstim){
+    projVal = fmtLong(c.fechaEstim);
+    if(c.llegaAntes > 0){ projSub = humanDays(c.llegaAntes)+' antes de la meta'; projCls = 'acc'; }
+    else if(c.llegaAntes === 0){ projSub = 'justo en la fecha'; projCls = 'acc'; }
+    else { projSub = humanDays(-c.llegaAntes)+' tarde'; projCls = 'bad'; }
+  }else if(c.ritmoDia == null){
+    projVal = 'Sin datos todavía'; projSub = 'cargá aportes y en unos días te lo digo';
+    projCls = '';
+  }else{
+    projVal = 'A este ritmo no llegás'; projSub = c.ritmoBase;
+    projCls = 'bad';
+  }
+  const projSm = (!c.fechaEstim || c.cumplido) ? ' sm' : '';
+
+  // ritmo
+  let ritmoVal, ritmoSub;
+  if(c.ritmoDia == null){
+    ritmoVal = '—'; ritmoSub = c.ritmoBase || 'sin movimientos todavía';
+  }else{
+    ritmoVal = usd0(c.ritmoDia)+'<span class="unit">/día</span>';
+    ritmoSub = usd(c.ritmoSemana)+' por semana · '+c.ritmoBase;
+  }
+  const ritmoCls = (c.ritmoDia != null && c.reqDia !== Infinity && c.ritmoDia >= c.reqDia) ? 'acc'
+                 : (c.ritmoDia != null && c.ritmoDia <= 0) ? 'bad' : '';
+
+  // requerido
+  let reqVal, reqSub;
+  if(c.cumplido){ reqVal = '0,00'; reqSub = 'ya lo tenés'; }
+  else if(c.diasRestantes <= 0){ reqVal = '—'; reqSub = 'la fecha ya pasó'; }
+  else if(c.rec && c.sueldosHastaMeta > 0){
+    reqVal = usd0(c.reqDiaExtra)+'<span class="unit">/día</span>';
+    reqSub = 'aparte del sueldo · entran ' + usd(c.sueldosHastaMeta) + ' USD hasta la meta';
+  }
+  else { reqVal = usd0(c.reqDia)+'<span class="unit">/día</span>'; reqSub = (ars(c.reqDia)||'') + ' · ' + usd(c.reqDia*7) + ' por semana'; }
+
+  // estado
+  let stCls = c.semaforo, stIco, stTxt;
+  if(c.total <= 0 && !c.bought.length){
+    stIco = ico('ledger'); stCls = '';
+    stTxt = `<b>Falta cargar qué querés comprar.</b> Agregá los ítems acá abajo con su precio en dólares `
+          + `y la app calcula sola cuánto tenés que juntar por día para llegar al ${fmtLong(o.targetDate)}.`;
+  }else if(c.cumplido){
+    stIco = ico('check');
+    stTxt = `<b>Objetivo cumplido.</b> Juntaste los ${usd(c.total)} USD`
+          + (c.sobra > 0.005 ? ` y te sobran ${usd(c.sobra)} USD.` : '.')
+          + ` Marcá los ítems como comprados a medida que los vayas comprando.`;
+    stCls = 'ok';
+  }else if(c.vencido){
+    stIco = ico('alert'); stCls = 'bad';
+    stTxt = `<b>La fecha meta ya pasó</b> (${fmtDate(o.targetDate)}) y todavía faltan ${usd(c.falta)} USD. Poné una fecha nueva abajo, en los ajustes del objetivo.`;
+  }else if(c.ritmoDia == null && c.sueldoCubre){
+    // ahorra solo por sueldo: sin ritmo variable, pero el plan de sueldos alcanza
+    stIco = ico('check'); stCls = 'ok';
+    stTxt = `<b>Vas con el plan de sueldos.</b> Los aportes previstos `
+          + `(${usd(c.sueldosHastaMeta)} USD hasta la meta) cubren lo que falta`
+          + (c.fechaEstim && c.fechaEstim !== 'cumplido' ? `: a ese paso llegás el ${fmtLong(c.fechaEstim)}.` : '.');
+  }else if(c.ritmoDia == null){
+    stIco = ico('spark'); stCls = '';
+    stTxt = `<b>Recién arrancás.</b> Andá cargando tus aportes en dólares a medida que ahorres. `
+          + `Cuando haya una semana de historia te muestro tu ritmo real y en qué fecha llegás. `
+          + `Por ahora la meta pide <b>${usd(c.rec ? c.reqDiaExtra : c.reqDia)} USD por día`
+          + `${c.rec ? ' aparte del sueldo' : ''}</b>.`;
+  }else{
+    const d = Math.abs(c.desvio), dias = Math.abs(Math.round(c.diasVentaja));
+    if(c.desvio >= -0.005 && c.ritmoDia != null && c.ritmoDia <= 0 && !c.sueldoCubre){
+      stIco = ico('alert');
+      stTxt = `<b>Estás al día con el plan, pero frenaste.</b> `
+            + `En los ${c.ventanaDias} días de la ventana tu saldo ${c.ritmoDia < 0 ? 'bajó' : 'no se movió'}. `
+            + `Si no volvés a meter, la fecha del ${fmtLong(o.targetDate)} no se cumple.`;
+    }else if(c.desvio >= -0.005){
+      stIco = ico('check');
+      stTxt = `<b>Vas bien.</b> A hoy el plan pedía ${usd(c.deberia)} USD y tenés ${usd(c.saldo)}: `
+            + `estás <b>${usd(d)} USD adelante</b>`
+            + (dias >= 1 ? `, unos ${dias} día${dias===1?'':'s'} de ventaja.` : '.');
+    }else if(c.semaforo === 'mid'){
+      stIco = ico('alert');
+      stTxt = `<b>Vas un poco atrás del plan.</b> `
+            + `A hoy pedía ${usd(c.deberia)} USD y tenés ${usd(c.saldo)}: te faltan <b>${usd(d)} USD</b>`
+            + (dias >= 1 ? `, unos ${dias} día${dias===1?'':'s'} de atraso. ` : '. ')
+            + (c.sueldoCubre
+                ? `Con los sueldos previstos (${usd(c.sueldosHastaMeta)} USD hasta la meta) llegás igual.`
+                : `Al ritmo actual lo recuperás.`);
+    }else{
+      stIco = ico('alert');
+      stTxt = `<b>Vas atrasado.</b> A hoy el plan pedía ${usd(c.deberia)} USD y tenés ${usd(c.saldo)} `
+            + `(<b>${usd(d)} USD</b> abajo`+(dias>=1?`, ${dias} día${dias===1?'':'s'}`:'')+`). `
+            + (c.reqComparable === Infinity || c.reqComparable <= 0 ? ''
+               : `Para llegar necesitás pasar a ${usd(c.reqComparable)} USD por día${c.rec ? ' aparte del sueldo' : ''}.`);
+    }
+  }
+
+  const diasTxt = c.vencido ? 'fecha vencida'
+    : c.diasRestantes === 0 ? '¡es hoy!'
+    : 'faltan <b>'+c.diasRestantes+'</b> día'+(c.diasRestantes===1?'':'s');
+
+  return `<div class="card">
+    <div class="card-b" style="padding-top:20px">
+      <div class="hero">
+        <div class="hero-main">
+          <div class="eyebrow">${ico('target')} Objetivo</div>
+          <div class="h-title"><h1>${esc(o.name)}</h1></div>
+          <div class="h-figure">
+            ${fig(usd0(c.saldo), 'USD', 'xl')}
+            <div class="sub">de <b>${usd0(c.total)} USD</b><br>${ars(c.total)||''}</div>
+          </div>
+          <div class="h-meta">
+            <span>${fmtLong(o.targetDate)}</span><span class="dot-sep"></span>
+            <span>${diasTxt}</span>
+            ${c.bought.length ? '<span class="dot-sep"></span><span><b>'+c.bought.length+'</b> ya comprado'+(c.bought.length===1?'':'s')+'</span>' : ''}
+          </div>
+          <div class="status ${stCls}"><span class="ico">${stIco}</span><span>${stTxt}</span></div>
+        </div>
+        <div class="ring">
+          <svg viewBox="0 0 188 188">
+            <circle cx="94" cy="94" r="${R}" fill="none" stroke="var(--card-3)" stroke-width="9"/>
+            <circle cx="94" cy="94" r="${R}" fill="none" stroke="var(--acc)" stroke-width="9"
+              stroke-linecap="round" stroke-dasharray="${dash.toFixed(2)} ${(C-dash).toFixed(2)}"
+              style="transition:stroke-dasharray .7s var(--ease)"/>
+          </svg>
+          <div class="rt">
+            <div class="pct">${(c.pct*100).toFixed(c.pct>=1?0:1)}<span style="font-size:.45em;color:var(--muted)">%</span></div>
+            <div class="of">Completado</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mgrid">
+        <div class="m">
+          <div class="lbl">Te falta</div>
+          <div class="val num">${usd0(c.falta)}<span class="unit">USD</span></div>
+          <div class="sub num">${ars(c.falta)||'—'}</div>
+        </div>
+        <div class="m">
+          <div class="lbl">Necesitás juntar</div>
+          <div class="val num acc">${reqVal}</div>
+          <div class="sub num">${reqSub}</div>
+        </div>
+        <div class="m">
+          <div class="lbl">Tu ritmo real</div>
+          <div class="val num ${ritmoCls}">${ritmoVal}</div>
+          ${sparkline(o, c.hoy, 30)}
+          <div class="sub num">${ritmoSub}</div>
+        </div>
+        <div class="m">
+          <div class="lbl">A este ritmo llegás</div>
+          <div class="val ${projCls}${projSm}">${projVal}</div>
+          <div class="sub">${projSub}</div>
+        </div>
+      </div>
+    </div>
+    ${pendHTML(o,c)}
+    <div class="quick">
+      <button class="btn primary big" id="qAdd">${ico('plus')} Agregar plata</button>
+      <button class="btn big" id="qSub">${ico('minus')} Sacar</button>
+      <span class="qsp"></span>
+      <span class="qlbl">${fmtDate(c.hoy)}</span>
+    </div>
+  </div>`;
+}
+
+/** Sueldo global que ya venció y espera confirmación. El monto es editable. */
+function pendHTML(o,c){
+  const pend = sueldosPendientes();
+  if(!pend.length) return '';
+  const p = pend[0];
+  const reparto = state.objectives.filter(x => (x.pctSueldo||0) > 0)
+    .map(x => esc(x.name)+' '+x.pctSueldo+'%').join(' · ');
+  const extra = pend.length > 1
+    ? ` <span style="color:var(--muted)">(y ${pend.length-1} mes${pend.length>2?'es':''} más atrasado${pend.length>2?'s':''})</span>` : '';
+  return `<div class="pend">
+    <span class="pend-t">Te toca el sueldo del <b>${fmtDate(p.fecha)}</b>.${extra}
+      ${reparto ? '<small>Se reparte en: '+reparto+'</small>'
+                : '<small style="color:var(--warn)">Todavía no asignaste porcentajes: abrí el menú y repartilo.</small>'}</span>
+    <input type="number" id="pendMonto" step="0.01" min="0" value="${p.monto}" aria-label="Monto del sueldo de este mes">
+    <span class="pend-u">USD</span>
+    <button class="btn sm" data-pend-skip="${p.ym}">Este mes no</button>
+    <button class="btn sm primary" data-pend-ok="${p.ym}">Confirmar</button>
+  </div>`;
+}
+
+/* ---- ítems ---- */
+let itemCur = 'usd';   // moneda elegida para cargar precios; se mantiene entre renders
+
+/** Pasa un precio a USD. Devuelve null si hace falta cotización y no hay. */
+function aUSD(valor, moneda){
+  if(moneda !== 'ars') return valor;
+  const r = state.settings.rate.value;
+  if(!r || r <= 0) return null;
+  return valor / r;
+}
+
+function itemsHTML(o,c){
+  let rows = '';
+
+  // Patrón de barras comparativas: el que está en curso va brillante y los que
+  // todavía no empezaron quedan apagados, para que la cascada se lea de un vistazo.
+  c.cascada.forEach((x,idx) => {
+    const i = x.item, p = Math.round(x.pct*100);
+    const apagado = x.cubierto <= 0.0001 && !x.listo;
+    rows += `<div class="cmp-row ${apagado?'dim':''} ${x.listo?'ready':''}">
+      <div class="nm">${esc(i.name)}
+        <small>${usd0(x.cubierto)} de ${usd0(i.price)} USD${ars(i.price)?' · '+ars(i.price):''}</small></div>
+      <div class="fg">
+        ${fig(p, '%', 'md'+(x.listo?' acc':''))}
+        <div class="i-acts" style="margin-top:6px">
+          <button class="ord-btn" data-up="${i.id}" ${idx===0?'disabled':''} title="Subir prioridad">${ico('up',12)}</button>
+          <button class="ord-btn" data-down="${i.id}" ${idx===c.cascada.length-1?'disabled':''} title="Bajar prioridad">${ico('down',12)}</button>
+          <button class="ord-btn" data-edit-item="${i.id}" title="Editar precio">${ico('pencil',12)}</button>
+          <button class="ord-btn" data-del-item="${i.id}" title="Borrar ítem">${ico('x',12)}</button>
+        </div>
+      </div>
+      <div class="track"><i style="width:${Math.min(100,p)}%"></i></div>
+      ${x.listo ? `<div class="ready-note">
+          <span>${ico('check',15)} <b>Ya podés comprar ${esc(i.name)}</b> — tenés cubiertos los ${usd0(i.price)} USD.</span>
+          <button class="btn sm primary" data-buy="${i.id}">Marcar como comprado</button>
+        </div>` : ''}
+    </div>`;
+  });
+
+  c.bought.forEach(i => {
+    rows += `<div class="cmp-row done">
+      <div class="nm">${esc(i.name)}
+        <small>Comprado ${i.boughtDate?fmtDate(i.boughtDate):''} · ${usd0(i.price)} USD</small></div>
+      <div class="fg">
+        ${fig(100, '%', 'md')}
+        <div class="i-acts" style="margin-top:6px">
+          <button class="ord-btn" data-unbuy="${i.id}" title="Deshacer la compra">${ico('undo',12)}</button>
+        </div>
+      </div>
+      <div class="track"><i style="width:100%"></i></div>
+    </div>`;
+  });
+
+  if(!rows){
+    rows = `<div class="hint" style="padding:8px 0 14px">
+      Todavía no cargaste nada. Agregá las cosas que querés comprar para este objetivo
+      y el total se calcula solo.</div>`;
+  }
+
+  const sobra = c.sobra > 0.005
+    ? `<div class="ready-note" style="margin-top:14px">
+         <span>Te <b>sobran ${usd(c.sobra)} USD</b> por encima del objetivo.</span></div>`
+    : '';
+
+  return `<div class="card">
+    <div class="card-h">
+      <h2>${ico('target')} Qué querés comprar</h2>
+      <div class="spacer"></div>
+      <span class="chip num">Total <b>${usd0(c.total)} USD</b>${ars(c.total)?' · '+ars(c.total):''}</span>
+    </div>
+    <div class="card-b">
+      ${rows}${sobra}
+      <div class="sep"></div>
+      <form class="row" id="fItem">
+        <div class="f"><label>Nombre</label><input name="name" placeholder="Ej: Placa de video" required maxlength="60"></div>
+        <div class="f sm"><label>Precio</label>
+          <input name="price" type="number" step="0.01" min="0" placeholder="${itemCur==='ars'?'760000':'500'}" required></div>
+        <div class="f" style="flex:0 0 142px"><label>Moneda</label>
+          <div class="seg">
+            <button type="button" class="${itemCur==='usd'?'on':''}" data-cur="usd">USD</button>
+            <button type="button" class="${itemCur==='ars'?'on':''}" data-cur="ars">Pesos</button>
+          </div>
+        </div>
+        <button class="btn primary" type="submit">+ Agregar</button>
+      </form>
+      <div class="hint" id="curHint" style="margin-top:9px">
+        Se llenan en cascada: primero el de arriba al 100%, después el siguiente. Ordenalos con ▲▼.
+        Meté el envío y los impuestos dentro del precio.
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---- movimientos ---- */
+function movHTML(o,c){
+  const list = [...o.movements].sort((a,b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  let rows = list.map(m => {
+    // La etiqueta congelada manda. El cálculo al vuelo queda solo como respaldo para
+    // movimientos guardados antes de que existiera diasPlan, y nunca para los
+    // automáticos (compras, sueldos, previos): ésos no te adelantan ni te atrasan.
+    const dd = m.diasPlan != null ? m.diasPlan
+             : (!m.excludeFromRate && !m.itemId ? diasQueMueve(m.amount, c) : null);
+    const etiqueta = m.note || m.cat || (m.amount>=0?'Aporte':'Retiro');
+    return `<div class="mv">
+      <span class="d num">${fmtDate(m.date)}</span>
+      <span class="n">${esc(etiqueta)}${
+        m.cat && m.note ? `<span class="tag">${esc(m.cat)}</span>` : ''}${
+        m.itemId ? '<span class="tag">compra</span>' : ''}${
+        m.excludeFromRate && !m.itemId ? '<span class="tag">fuera del promedio</span>' : ''}</span>
+      <span class="a num ${m.amount>=0?'in':'out'}">${m.amount>=0?'+':'−'}${usd(Math.abs(m.amount))}
+        ${dd ? `<em class="dias">${dd>0?'te adelantó':'te atrasó'} ${Math.abs(dd)} d</em>` : ''}</span>
+      <button class="x" data-del-mov="${m.id}" title="Borrar movimiento">${ico('x')}</button>
+    </div>`;
+  }).join('');
+
+  // de dónde salió la plata (lo sin categoría también cuenta, si no el desglose miente)
+  const porCat = new Map();
+  o.movements.filter(m => m.amount > 0).forEach(m =>
+    porCat.set(m.cat || 'Sin categoría', (porCat.get(m.cat || 'Sin categoría')||0) + m.amount));
+  const top = [...porCat.entries()].sort((a,b) => b[1]-a[1]);
+  const totalIn = top.reduce((s,[,v]) => s+v, 0);
+  const desglose = top.length
+    ? top.map(([k,v]) => `${esc(k)} <b>${Math.round(v/totalIn*100)}%</b>`).join(' · ')
+    : '';
+
+  if(!rows) rows = `<div class="hint" style="padding:14px 0">Sin movimientos todavía.</div>`;
+
+  const semTxt = c.semanaActual !== 0
+    ? `Esta semana llevás <b class="num" style="color:${c.semanaActual>0?'var(--acc)':'var(--bad)'}">${c.semanaActual>0?'+':'−'}${usd(Math.abs(c.semanaActual))} USD</b>`
+    : `Esta semana todavía no metiste nada`;
+
+  return `<div class="card">
+    <div class="card-h">
+      <h2>${ico('ledger')} Movimientos</h2>
+      <div class="spacer"></div>
+      <span class="chip num">Saldo <b>${usd(c.saldo)} USD</b></span>
+    </div>
+    <div class="card-b">
+      <form id="fMov">
+        <div class="row">
+          <div class="f xs"><label>Fecha</label><input name="date" type="date" value="${today()}" max="${today()}" required></div>
+          <div class="f sm"><label>Monto USD</label><input name="amount" type="number" step="0.01" min="0" placeholder="35" required></div>
+          <div class="f" style="flex:0 0 168px">
+            <label>Tipo</label>
+            <div class="seg">
+              <button type="button" class="on in" data-kind="in">Aporte</button>
+              <button type="button" data-kind="out">Retiro</button>
+            </div>
+          </div>
+          <div class="f sm"><label>Origen</label>
+            <select name="cat" id="mvCat">${CATS_IN.map(x => `<option>${x}</option>`).join('')}</select></div>
+          <div class="f"><label>Nota</label><input name="note" placeholder="Opcional" maxlength="60"></div>
+          <button class="btn primary" type="submit">Cargar</button>
+        </div>
+        <label class="check" style="margin-top:11px">
+          <input type="checkbox" name="excl">
+          No contar este movimiento en el promedio semanal <span style="color:var(--dim)">(para ahorro previo o plata que ya tenías)</span>
+        </label>
+      </form>
+      <div class="sep"></div>
+      <div class="hint" style="margin-bottom:6px">${semTxt} · el ritmo se mide sobre los últimos
+        ${c.ventanaDias} días, contando desde un aporte tuyo, para que no importe si ahorrás
+        todos los días o una vez por mes.</div>
+      ${desglose ? `<div class="hint" style="margin-bottom:8px">De dónde salió: ${desglose}</div>` : ''}
+      <div class="mv-list">${rows}</div>
+    </div>
+  </div>`;
+}
+
+/* ---- gráfico: eje Y = dinero, eje X = días.
+       Barra fina + punto en cada fecha con movimiento, unidos por una línea.
+       Rango ajustable: semana / mes / todo hasta la fecha meta. ---- */
+const CW = 860, CH = 350, CPL = 64, CPR = 30, CPT = 34, CPB = 46;
+const CIW = CW-CPL-CPR, CIH = CH-CPT-CPB;
+
+let chartRange  = 'todo';   // 'sem' | 'mes' | 'todo'
+let chartOffset = 0;        // 0 = ventana más reciente; 1 = una ventana hacia atrás, etc.
+let zoomStart   = 0;        // día donde arranca la ventana con zoom, contado desde d0
+let zoomDays    = null;     // largo de la ventana en días; null = sin zoom, se ve todo
+let yShift      = 0;        // desplazamiento vertical (en USD) del arrastre
+let chartFullSpan = 1;      // largo total del objetivo en días; lo actualiza chartHTML
+let chartAnchorDia = 0;     // día de "hoy" contado desde d0: ahí se ancla el zoom
+let chartYAuto  = 1;        // alto de la banda visible en USD
+
+function chartHTML(o,c){
+  const W = CW, H = CH, PL = CPL, PR = CPR, PT = CPT, PB = CPB;
+  const iw = CIW, ih = CIH;
+
+  // --- serie acumulada completa (los movimientos del mismo día se juntan en un punto)
+  const movs = [...o.movements].sort((a,b) => a.date.localeCompare(b.date));
+  const porFecha = new Map();
+  let acc = 0;
+  movs.forEach(m => { acc += m.amount; porFecha.set(m.date, acc); });
+  const serie = [...porFecha.entries()];
+
+  const d0 = (serie.length && serie[0][0] < o.startDate) ? serie[0][0] : o.startDate;
+  const d1 = (c.fechaEstim && c.fechaEstim !== 'cumplido' && diffDays(o.targetDate, c.fechaEstim) > 0)
+             ? c.fechaEstim : o.targetDate;
+
+  // --- ventana visible
+  const N = chartRange === 'sem' ? 7 : chartRange === 'mes' ? 30 : 0;
+  const fullSpan = Math.max(1, diffDays(d0, d1));
+  chartFullSpan = fullSpan;
+
+  let wa, wb;
+  if(N){
+    wb = addDays(c.hoy, -chartOffset*N);
+    wa = addDays(wb, -(N-1));
+  }else{
+    // vista completa: la ventana es un tramo de [d0, d1] que se puede achicar con el zoom
+    if(zoomDays == null || zoomDays >= fullSpan){ zoomDays = fullSpan; zoomStart = 0; }
+    zoomDays  = Math.max(7, Math.min(fullSpan, Math.round(zoomDays)));
+    zoomStart = Math.max(0, Math.min(fullSpan - zoomDays, Math.round(zoomStart)));
+    wa = addDays(d0, zoomStart);
+    wb = addDays(wa, zoomDays);
+  }
+  const spanD = Math.max(1, diffDays(wa, wb));
+  const puedeAtras = diffDays(d0, wa) > 0;
+  const conZoom = !N && zoomDays < fullSpan;
+
+  // sin recortar el valor: lo que se sale del área de dibujo lo corta el clipPath
+  const X = k => PL + iw * (diffDays(wa,k) / spanD);
+
+  // saldo con el que se entra a la ventana + puntos que caen adentro
+  let saldoEntrada = 0, hayPrevios = false;
+  serie.forEach(([k,v]) => { if(k < wa){ saldoEntrada = v; hayPrevios = true; } });
+  const visibles = serie.filter(([k]) => k >= wa && k <= wb);
+
+  // Escala vertical. La banda visible arranca en 0 y mide yAuto, pero el arrastre
+  // vertical la puede correr con yShift, así te podés mover en las dos direcciones.
+  const maxVis = Math.max(saldoEntrada, 0, ...visibles.map(([,v]) => v));
+  const yAuto = ((N || conZoom) ? Math.max(maxVis, 1) : Math.max(c.total, maxVis, 1)) * 1.12;
+  yShift = Math.max(-yAuto*0.4, Math.min(yAuto*1.2, yShift));
+  chartYAuto = yAuto;
+
+  const yLo = yShift, yHi = yAuto + yShift;
+  const Y = v => PT + ih * (1 - (v - yLo) / (yHi - yLo));
+
+  const y0 = Y(0);
+  const rp = spanD > 90 ? 2.8 : 3.8;   // radio del punto
+
+  const puntos = visibles.map(([k,v]) =>
+    `<circle cx="${X(k).toFixed(1)}" cy="${Y(Math.max(0,v)).toFixed(1)}" r="${rp}" `
+    + `fill="var(--acc)" stroke="var(--card)" stroke-width="1.6"><title>${fmtDate(k)} · ${usd(v)} USD</title></circle>`
+  ).join('');
+
+  // --- línea que une los puntos
+  const lp = [];
+  if(hayPrevios) lp.push([wa, saldoEntrada]);
+  visibles.forEach(([k,v]) => lp.push([k, Math.max(0,v)]));
+  if(lp.length){
+    const ultK = lp[lp.length-1][0], ultV = lp[lp.length-1][1];
+    const finK = diffDays(c.hoy, wb) > 0 ? c.hoy : wb;   // la línea real no pasa de hoy
+    if(diffDays(ultK, finK) > 0) lp.push([finK, ultV]);
+  }
+  const lineaD = lp.length
+    ? 'M ' + lp.map(([k,v]) => `${X(k).toFixed(1)} ${Y(v).toFixed(1)}`).join(' L ')
+    : '';
+
+  // --- área bajo la curva: la misma línea, cerrada contra el cero.
+  // Si por el arrastre el cero queda fuera de pantalla, el clipPath lo corta y
+  // el relleno llega hasta el borde de abajo.
+  const areaD = lp.length > 1
+    ? `M ${X(lp[0][0]).toFixed(1)} ${y0.toFixed(1)} `
+      + 'L ' + lp.map(([k,v]) => `${X(k).toFixed(1)} ${Y(v).toFixed(1)}`).join(' L ')
+      + ` L ${X(lp[lp.length-1][0]).toFixed(1)} ${y0.toFixed(1)} Z`
+    : '';
+
+  // --- plan ideal, evaluado en los bordes de la ventana
+  const planAt = k => c.saldoInicial
+    + c.planDia * Math.min(c.planTotalDias, Math.max(0, diffDays(o.startDate, k)));
+  const planD = `M ${X(wa).toFixed(1)} ${Y(planAt(wa)).toFixed(1)} `
+              + `L ${X(wb).toFixed(1)} ${Y(planAt(wb)).toFixed(1)}`;
+
+  // --- proyección: solo tiene sentido en la vista completa
+  let projD = '';
+  if(!N && c.fechaEstim && c.fechaEstim !== 'cumplido'){
+    projD = `M ${X(c.hoy).toFixed(1)} ${Y(c.saldo).toFixed(1)} `
+          + `L ${X(c.fechaEstim).toFixed(1)} ${Y(c.total).toFixed(1)}`;
+  }
+
+  // --- grillas
+  let gy = '';
+  for(let i = 0; i <= 4; i++){
+    const v = yLo + (yHi-yLo)*i/4, y = Y(v);
+    gy += `<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}" stroke="var(--line-soft)" stroke-width="1"/>
+           <text x="${PL-10}" y="${(y+4).toFixed(1)}" text-anchor="end" font-size="11" fill="var(--dim)">${usd0(v)}</text>`;
+  }
+
+  // una raya por día cuando entran; etiquetas cada tanto para que no se pisen
+  const paso = Math.max(1, Math.ceil(spanD/6));
+  let gx = '';
+  if(spanD <= 45){
+    for(let i = 0; i <= spanD; i++){
+      const x = X(addDays(wa,i));
+      gx += `<line x1="${x.toFixed(1)}" y1="${PT}" x2="${x.toFixed(1)}" y2="${(PT+ih).toFixed(1)}"
+                   stroke="var(--line-soft)" stroke-width="1" opacity="${i%paso===0?'1':'.45'}"/>`;
+    }
+  }
+  for(let i = 0; i <= spanD; i += paso){
+    const k = addDays(wa,i), x = X(k);
+    if(spanD > 45){
+      gx += `<line x1="${x.toFixed(1)}" y1="${PT}" x2="${x.toFixed(1)}" y2="${(PT+ih).toFixed(1)}" stroke="var(--line-soft)" stroke-width="1"/>`;
+    }
+    gx += `<text x="${x.toFixed(1)}" y="${H-26}" text-anchor="middle" font-size="11" fill="var(--dim)">${fmtShort(k)}</text>`;
+  }
+
+  // --- marcas
+  const dentro = k => diffDays(wa,k) >= 0 && diffDays(k,wb) >= 0;
+  const yObj = Y(c.total);
+  const verObj = c.total > 0 && c.total >= yLo && c.total <= yHi;
+
+  // datos que necesitan la rueda y el arrastre para orientarse
+  chartAnchorDia = diffDays(d0, c.hoy);
+
+  const marcaHoy = dentro(c.hoy) ? `
+    <line x1="${X(c.hoy).toFixed(1)}" y1="${PT}" x2="${X(c.hoy).toFixed(1)}" y2="${(PT+ih).toFixed(1)}" stroke="var(--muted)" stroke-width="1" opacity=".45"/>
+    <text x="${(X(c.hoy)+4).toFixed(1)}" y="${PT+11}" font-size="10" fill="var(--muted)">hoy</text>` : '';
+
+  const marcaMeta = dentro(o.targetDate) ? `
+    <line x1="${X(o.targetDate).toFixed(1)}" y1="${PT}" x2="${X(o.targetDate).toFixed(1)}" y2="${(PT+ih).toFixed(1)}"
+          stroke="var(--warn)" stroke-width="1.5" stroke-dasharray="3 4" opacity=".55"/>` : '';
+
+  const marcaObj = verObj ? `
+    <line x1="${PL}" y1="${yObj.toFixed(1)}" x2="${W-PR}" y2="${yObj.toFixed(1)}" stroke="var(--warn)" stroke-width="1.6" stroke-dasharray="4 4"/>
+    <text x="${W-PR}" y="${(yObj-8).toFixed(1)}" text-anchor="end" font-size="11" font-weight="600" fill="var(--warn)">objetivo ${usd0(c.total)} USD · ${fmtShort(o.targetDate)}</text>` : '';
+
+  const rotulo = `${fmtDate(wa)} – ${fmtDate(wb)}`;
+
+  return `<div class="card">
+    <div class="card-h">
+      <h2>${ico('chart')} Plan vs. lo que llevás</h2>
+      <div class="spacer"></div>
+      ${N ? `<button class="btn sm ghost" data-shift="back" ${puedeAtras?'':'disabled'} title="Ventana anterior">‹</button>` : ''}
+      <span class="chip num">${rotulo}</span>
+      ${N ? `<button class="btn sm ghost" data-shift="fwd" ${chartOffset>0?'':'disabled'} title="Ventana siguiente">›</button>` : ''}
+      ${!N ? `<button class="btn sm ghost" data-zoom="out" ${conZoom?'':'disabled'} title="Alejar">−</button>
+              <button class="btn sm ghost" data-zoom="in" ${zoomDays<=7?'disabled':''} title="Acercar">+</button>` : ''}
+      ${(conZoom || Math.abs(yShift) > 0.5) ? `<button class="btn sm ghost" data-zoom="reset" title="Volver a la vista completa">⟲</button>` : ''}
+      <div class="seg" style="flex:none">
+        <button type="button" class="${chartRange==='sem'?'on':''}" data-range="sem">Semana</button>
+        <button type="button" class="${chartRange==='mes'?'on':''}" data-range="mes">Mes</button>
+        <button type="button" class="${chartRange==='todo'?'on':''}" data-range="todo">Todo</button>
+      </div>
+    </div>
+    <div class="card-b">
+      <div class="chart-wrap">
+      <svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Ahorro acumulado en dólares por día">
+        <defs>
+          <linearGradient id="ga" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="var(--acc)" stop-opacity=".34"/>
+            <stop offset="1" stop-color="var(--acc)" stop-opacity=".02"/>
+          </linearGradient>
+          <clipPath id="cp"><rect x="${PL}" y="${PT}" width="${iw}" height="${ih}"/></clipPath>
+        </defs>
+        ${gy}${gx}
+        ${marcaHoy}${marcaMeta}
+        <g clip-path="url(#cp)">
+          ${areaD ? `<path d="${areaD}" fill="url(#ga)" stroke="none"/>` : ''}
+          <path d="${planD}" fill="none" stroke="var(--muted)" stroke-width="1.8" stroke-dasharray="6 5" opacity=".75"/>
+          ${lineaD ? `<path d="${lineaD}" fill="none" stroke="var(--acc)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>` : ''}
+          ${puntos}
+          ${projD ? `<path d="${projD}" fill="none" stroke="var(--blue)" stroke-width="2" stroke-dasharray="5 5" opacity=".9"/>
+            <circle cx="${X(c.fechaEstim).toFixed(1)}" cy="${Y(c.total).toFixed(1)}" r="4.5" fill="var(--blue)"/>` : ''}
+        </g>
+        ${marcaObj}
+        ${!visibles.length && !hayPrevios ? `<text x="${(PL+iw/2).toFixed(1)}" y="${(PT+ih/2).toFixed(1)}" text-anchor="middle" font-size="13" fill="var(--dim)">Sin movimientos en este rango</text>` : ''}
+        <text x="${(PL+iw/2).toFixed(1)}" y="${H-6}" text-anchor="middle" font-size="10.5" fill="var(--dim)">días →</text>
+        <text transform="translate(15,${(PT+ih/2).toFixed(1)}) rotate(-90)" text-anchor="middle" font-size="10.5" fill="var(--dim)">USD ahorrados</text>
+      </svg>
+      </div>
+      <div class="lg">
+        <span><i style="background:var(--acc)"></i> Tu ahorro acumulado</span>
+        <span><i style="background:var(--muted)"></i> Plan ideal</span>
+        ${projD ? '<span><i style="background:var(--blue)"></i> Proyección a tu ritmo</span>' : ''}
+        ${verObj ? '<span><i style="background:var(--warn)"></i> Objetivo y fecha meta</span>' : ''}
+        ${(N || conZoom) ? '<span style="color:var(--dim)">Escala ajustada al rango visible</span>' : ''}
+        <span style="color:var(--dim)">${!N ? 'Rueda para hacer zoom · ' : ''}arrastrá para moverte en cualquier dirección</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+/** Redibuja solo la tarjeta del gráfico. El zoom se usa a 60fps y no hace falta
+    rehacer toda la pantalla en cada movimiento. */
+function repaintChart(){
+  const o = activeObj(), box = document.getElementById('chartBox');
+  if(!o || !box) return;
+  const c = compute(o);
+  box.innerHTML = chartHTML(o,c);
+  wireChart();
+}
+
+/** Acerca o aleja manteniendo quieto el día que está bajo `frac` (0 = borde izq, 1 = der) */
+function zoomAlrededor(frac, factor){
+  const nuevo = Math.max(7, Math.min(chartFullSpan, Math.round(zoomDays * factor)));
+  const diaFijo = zoomStart + frac * zoomDays;
+  zoomStart = Math.round(diaFijo - frac * nuevo);
+  zoomDays  = nuevo;
+}
+
+/**
+ * Dónde clavar el zoom. Si la punta del gráfico (hoy) está a la vista, se ancla ahí:
+ * es donde están tus datos, así que al acercarte no se te escapa de la pantalla.
+ * Si te fuiste a mirar otra época, se ancla en el medio de lo que estás viendo.
+ */
+function anclaZoom(){
+  const fin = zoomStart + zoomDays;
+  if(chartAnchorDia >= zoomStart && chartAnchorDia <= fin){
+    return (chartAnchorDia - zoomStart) / zoomDays;
+  }
+  return 0.5;
+}
+
+function wireChart(){
+  document.querySelectorAll('[data-range]').forEach(b => b.onclick = () => {
+    chartRange = b.dataset.range;
+    chartOffset = 0; zoomDays = null; zoomStart = 0; yShift = 0;
+    repaintChart();
+  });
+  document.querySelectorAll('[data-shift]').forEach(b => b.onclick = () => {
+    chartOffset = Math.max(0, chartOffset + (b.dataset.shift === 'back' ? 1 : -1));
+    repaintChart();
+  });
+  document.querySelectorAll('[data-zoom]').forEach(b => b.onclick = () => {
+    if(b.dataset.zoom === 'reset'){ zoomDays = chartFullSpan; zoomStart = 0; yShift = 0; }
+    else zoomAlrededor(anclaZoom(), b.dataset.zoom === 'in' ? 0.75 : 1/0.75);
+    repaintChart();
+  });
+
+  const svg = document.querySelector('svg.chart');
+  if(!svg) return;
+  svg.style.cursor = 'grab';
+
+  // --- rueda: zoom fino. Un click de rueda mueve ~8%, no un salto.
+  if(chartRange === 'todo'){
+    svg.addEventListener('wheel', e => {
+      e.preventDefault();
+      const paso = Math.max(-1.5, Math.min(1.5, e.deltaY / 100));   // trackpad incluido
+      zoomAlrededor(anclaZoom(), Math.exp(paso * 0.08));
+      repaintChart();
+    }, { passive: false });
+  }
+
+  // --- arrastre libre: horizontal (si hay zoom) y vertical siempre
+  svg.addEventListener('mousedown', e => {
+    e.preventDefault();
+    const x0 = e.clientX, y0 = e.clientY;
+    const baseX = zoomStart, baseY = yShift;
+    const puedeX = chartRange === 'todo' && zoomDays != null && zoomDays < chartFullSpan;
+    let ultX = x0, ultY = y0, pendiente = false;
+    svg.style.cursor = 'grabbing';
+
+    const mover = ev => {
+      ultX = ev.clientX; ultY = ev.clientY;
+      if(pendiente) return;
+      pendiente = true;
+      requestAnimationFrame(() => {
+        pendiente = false;
+        const el = document.querySelector('svg.chart');
+        if(!el) return;
+        const r = el.getBoundingClientRect();
+        if(puedeX){
+          const pxPorDia = (r.width * (CIW/CW)) / zoomDays;
+          zoomStart = Math.round(baseX - (ultX - x0) / pxPorDia);
+        }
+        const usdPorPx = chartYAuto / (r.height * (CIH/CH));
+        yShift = baseY + (ultY - y0) * usdPorPx;
+        repaintChart();
+        const nuevo = document.querySelector('svg.chart');
+        if(nuevo) nuevo.style.cursor = 'grabbing';
+      });
+    };
+    const soltar = () => {
+      window.removeEventListener('mousemove', mover);
+      window.removeEventListener('mouseup', soltar);
+      const el = document.querySelector('svg.chart');
+      if(el) el.style.cursor = 'grab';
+    };
+    window.addEventListener('mousemove', mover);
+    window.addEventListener('mouseup', soltar);
+  });
+}
+
+/* ---- simulador ---- */
+let simA = null, simB = null;   // se conservan entre renders
+
+function simHTML(o,c){
+  if(simA == null) simA = c.reqDia !== Infinity && c.reqDia > 0 ? Math.round(c.reqDia*100)/100 : 5;
+  if(simB == null) simB = o.targetDate;
+
+  return `<div class="card">
+    <div class="card-h"><h2>${ico('spark')} ¿Qué pasa si…?</h2></div>
+    <div class="card-b">
+      <div class="row">
+        <div class="f"><label>Si meto por día (USD)</label>
+          <input id="simA" type="number" step="0.01" min="0" value="${simA}"></div>
+      </div>
+      <div class="sim-out" id="simOutA"></div>
+      <div class="sep"></div>
+      <div class="row">
+        <div class="f"><label>Si quiero llegar el</label>
+          <input id="simB" type="date" value="${simB}"></div>
+      </div>
+      <div class="sim-out" id="simOutB"></div>
+      <div class="hint" style="margin-top:10px">Esto no toca tus datos, es solo para probar escenarios.</div>
+    </div>
+  </div>`;
+}
+
+function renderSim(o,c){
+  const a = document.getElementById('simOutA');
+  const b = document.getElementById('simOutB');
+  if(!a || !b || !o || !c) return;
+  if(simB == null) simB = o.targetDate;   // sin fecha elegida no hay nada que comparar
+
+  // A: monto por día -> fecha
+  const v = Number(simA);
+  if(c.falta <= 0.0001){
+    a.innerHTML = 'Ya llegaste al objetivo.';
+  }else if(!v || v <= 0){
+    a.innerHTML = 'Con 0 por día no llegás nunca.';
+  }else{
+    const dias = Math.ceil(c.falta / v);
+    const f = addDays(c.hoy, dias);
+    const dif = diffDays(f, o.targetDate);
+    a.innerHTML = `Metiendo <b>${usd(v)} USD por día</b> (${usd(v*7)} por semana${ars(v)?', '+ars(v)+' diarios':''}) llegás el
+      <span class="big">${fmtLong(f)}</span>
+      <span style="color:var(--muted);font-size:13px">en ${humanDays(dias)} · ` +
+      (dif > 0 ? `<b style="color:var(--acc)">${humanDays(dif)} antes</b> de tu meta`
+       : dif === 0 ? `<b style="color:var(--acc)">justo en tu meta</b>`
+       : `<b style="color:var(--bad)">${humanDays(-dif)} después</b> de tu meta`) + `</span>`;
+  }
+
+  // B: fecha -> monto por día
+  const dd = diffDays(c.hoy, simB);
+  if(c.falta <= 0.0001){
+    b.innerHTML = 'Ya llegaste al objetivo.';
+  }else if(dd <= 0){
+    b.innerHTML = 'Elegí una fecha posterior a hoy.';
+  }else{
+    const need = c.falta / dd;
+    const vs = c.ritmoDia != null
+      ? (c.ritmoDia >= need
+          ? ` Tu ritmo actual (${usd(c.ritmoDia)}/día) ya alcanza.`
+          : ` Tu ritmo actual es ${usd(c.ritmoDia)}/día: tenés que subir ${usd(need-c.ritmoDia)} por día.`)
+      : '';
+    b.innerHTML = `Para llegar el <b>${fmtLong(simB)}</b> (${humanDays(dd)}) necesitás
+      <span class="big">${usd(need)} USD por día</span>
+      <span style="color:var(--muted);font-size:13px">${usd(need*7)} por semana${ars(need)?' · '+ars(need)+' diarios':''}.${vs}</span>`;
+  }
+}
+
+/* ---- fechas de oportunidad ---- */
+function fechasHTML(o,c){
+  const filas = c.fechasClave.map(f => {
+    const p = Math.round(f.pct*100);
+    return `<div class="fk-row ${f.alcanza?'ok':''}">
+      <div class="n">${esc(f.name)}
+        <small>${fmtLong(f.date)} · en ${humanDays(f.dias)}${f.fija?'':' · tuya'}</small></div>
+      <div class="v">${f.alcanza
+        ? `<b>Te alcanza</b>llegás con ${usd(f.proy)} USD`
+        : `<b>${p}%</b>te faltarían ${usd(f.falta)}`}</div>
+      <div class="fk-bar"><i style="width:${Math.min(100,p)}%"></i></div>
+    </div>`;
+  }).join('');
+
+  return `<div class="card">
+    <div class="card-h"><h2>${ico('flag')} Fechas de oportunidad</h2>
+      <div class="spacer"></div>
+      <button class="btn sm ghost" id="btnAddFecha">+ Agregar</button>
+    </div>
+    <div class="card-b">
+      ${filas ? `<div class="fk">${filas}</div>` : `<div class="hint">
+        No hay fechas entre hoy y tu meta. Agregá las que te sirvan: Hot Sale, CyberMonday,
+        el día que cobrás el aguinaldo. Te voy a decir con qué porcentaje llegás a cada una.</div>`}
+      <div class="hint" style="margin-top:12px">
+        Calculado con tu ritmo actual${c.rec?' más los sueldos que entran hasta esa fecha':''}.
+        El Black Friday y Navidad los pongo solo; el resto los cargás vos.
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---- ajustes del objetivo ---- */
+function settingsHTML(o,c){
+  return `<div class="card">
+    <div class="card-h"><h2>${ico('gear')} Ajustes de este objetivo</h2></div>
+    <div class="card-b">
+      <div class="stack">
+        <div class="f"><label>Nombre</label><input id="setName" value="${esc(o.name)}" maxlength="60"></div>
+        <div class="row">
+          <div class="f"><label>Fecha meta</label><input id="setDate" type="date" value="${o.targetDate}"></div>
+          <div class="f"><label>Arrancó el</label><input id="setStart" type="date" value="${o.startDate}"></div>
+        </div>
+        <div class="hint">«Arrancó el» es desde cuándo se traza la línea del plan ideal. Cambialo si empezaste a ahorrar antes de crear el objetivo.</div>
+      </div>
+      <div class="sep"></div>
+      <div class="stack">
+        <label class="check"><input type="checkbox" id="setRecOn" ${o.recurrente&&o.recurrente.activo?'checked':''}>
+          Destino parte del sueldo a este objetivo todos los meses</label>
+        <div class="row" id="setRecBox" style="${o.recurrente&&o.recurrente.activo?'':'display:none'}">
+          <div class="f xs"><label>Día del mes</label>
+            <input id="setRecDia" type="number" min="1" max="31" value="${o.recurrente?o.recurrente.dia:5}"></div>
+          <div class="f"><label>Monto USD</label>
+            <input id="setRecMonto" type="number" step="0.01" min="0" value="${o.recurrente?o.recurrente.monto:''}" placeholder="50"></div>
+        </div>
+        <div class="hint">Ese aporte queda <b>fuera del promedio semanal</b> a propósito: como ya
+          está previsto, el ritmo mide solo lo que ahorrás de más. La proyección suma las dos cosas.</div>
+      </div>
+      <div class="sep"></div>
+      <div class="row">
+        <button class="btn" id="btnArch">${o.archived?'Desarchivar':'Archivar'} objetivo</button>
+        <div class="spacer"></div>
+        <button class="btn danger ghost" id="btnDelObj">Borrar objetivo</button>
+      </div>
+      <div class="warnbox" style="margin-top:14px">
+        Los datos se guardan solo en este navegador. Si limpiás la caché sin haber hecho
+        <b>Backup</b>, se pierde todo el historial.
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================================================
+   9. EVENTOS
+   ============================================================ */
+function wire(o,c){
+  const $ = s => document.querySelector(s);
+
+  /* -- ítems -- */
+  const fItem = $('#fItem');
+  const hint  = $('#curHint');
+  const HINT_BASE = 'Se llenan en cascada: primero el de arriba al 100%, después el siguiente. '
+                  + 'Ordenalos con ▲▼. Meté el envío y los impuestos dentro del precio.';
+
+  /** Muestra en vivo a cuántos dólares equivale lo que estás tipeando */
+  function updHint(){
+    if(!hint || !fItem) return;
+    const v = Number(fItem.price.value);
+    const r = state.settings.rate.value;
+    if(itemCur !== 'ars'){ hint.innerHTML = HINT_BASE; return; }
+    if(!r){
+      hint.innerHTML = '<span style="color:var(--warn)">Para cargar en pesos necesito la cotización. '
+                     + 'Tocá el chip <b>USD</b> de arriba a la derecha y buscala o escribila a mano.</span>';
+      return;
+    }
+    if(!isFinite(v) || v <= 0){
+      hint.innerHTML = 'Escribí el precio en pesos y te lo paso a dólares con el dólar del BNA ($'
+                     + nfARS.format(Math.round(r)) + ').';
+      return;
+    }
+    hint.innerHTML = '$' + nfARS.format(Math.round(v)) + ' ÷ ' + nfARS.format(Math.round(r))
+                   + ' = <b style="color:var(--acc)">' + usd(v/r) + ' USD</b>. '
+                   + 'Se guarda en dólares, así que si el dólar cambia el ítem no se mueve.';
+  }
+
+  document.querySelectorAll('[data-cur]').forEach(b => b.onclick = () => {
+    itemCur = b.dataset.cur;
+    document.querySelectorAll('[data-cur]').forEach(x => x.className = x.dataset.cur === itemCur ? 'on' : '');
+    fItem.price.placeholder = itemCur === 'ars' ? '760000' : '500';
+    updHint(); fItem.price.focus();
+  });
+  if(fItem) fItem.price.oninput = updHint;
+  updHint();
+
+  if(fItem) fItem.onsubmit = e => {
+    e.preventDefault();
+    const fd = new FormData(fItem);
+    const name = String(fd.get('name')||'').trim();
+    const raw  = Number(fd.get('price'));
+    if(!name || !isFinite(raw) || raw < 0) return;
+    const price = aUSD(raw, itemCur);
+    if(price == null){
+      alert('Para cargar precios en pesos necesito la cotización del dólar.\n\n'
+          + 'Tocá el chip "USD" de arriba a la derecha, buscala o escribila a mano, y volvé a intentar.');
+      return;
+    }
+    const maxOrder = o.items.reduce((m,i) => Math.max(m, i.order), -1);
+    o.items.push({ id: uid(), name, price, order: maxOrder+1, bought:false, boughtDate:null });
+    save(); renderTabs(); render();
+  };
+
+  document.querySelectorAll('[data-up]').forEach(b => b.onclick = () => moveItem(o, b.dataset.up, -1));
+  document.querySelectorAll('[data-down]').forEach(b => b.onclick = () => moveItem(o, b.dataset.down, 1));
+
+  document.querySelectorAll('[data-del-item]').forEach(b => b.onclick = () => {
+    const it = o.items.find(i => i.id === b.dataset.delItem);
+    if(!it) return;
+    if(!confirm('¿Borrar «'+it.name+'» del objetivo?\n\nEl total se recalcula, pero tus movimientos no se tocan.')) return;
+    o.items = o.items.filter(i => i.id !== it.id);
+    save(); renderTabs(); render();
+  });
+
+  document.querySelectorAll('[data-edit-item]').forEach(b => b.onclick = () => {
+    const it = o.items.find(i => i.id === b.dataset.editItem);
+    if(!it) return;
+    let cur = 'usd';
+    modal('Editar ítem', `<div class="stack">
+        <div class="f"><label>Nombre</label><input id="eiName" value="${esc(it.name)}" maxlength="60"></div>
+        <div class="row">
+          <div class="f"><label>Precio</label>
+            <input id="eiPrice" type="number" step="0.01" min="0" value="${it.price.toFixed(2)}"></div>
+          <div class="f" style="flex:0 0 142px"><label>Moneda</label>
+            <div class="seg">
+              <button type="button" class="on" data-ecur="usd">USD</button>
+              <button type="button" data-ecur="ars">Pesos</button>
+            </div>
+          </div>
+        </div>
+        <div class="hint" id="eiHint">Si el precio cambió, actualizalo acá y todos los números se recalculan solos.</div>
+      </div>`,
+      [{label:'Cancelar', onClick: closeModal},
+       {label:'Guardar', cls:'primary', onClick: () => {
+          const n = document.getElementById('eiName').value.trim();
+          const raw = Number(document.getElementById('eiPrice').value);
+          if(!n || !isFinite(raw) || raw < 0) return;
+          const p = aUSD(raw, cur);
+          if(p == null){ alert('Necesito la cotización del dólar para convertir desde pesos.'); return; }
+          it.name = n; it.price = p;
+          save(); closeModal(); renderTabs(); render();
+       }}],
+      () => {
+        const inp = document.getElementById('eiPrice');
+        const eh  = document.getElementById('eiHint');
+        const upd = () => {
+          const r = state.settings.rate.value, v = Number(inp.value);
+          if(cur !== 'ars'){ eh.textContent = 'Si el precio cambió, actualizalo acá y todos los números se recalculan solos.'; return; }
+          if(!r){ eh.innerHTML = '<span style="color:var(--warn)">Falta la cotización del dólar.</span>'; return; }
+          eh.innerHTML = isFinite(v) && v > 0
+            ? '$'+nfARS.format(Math.round(v))+' ÷ '+nfARS.format(Math.round(r))
+              +' = <b style="color:var(--acc)">'+usd(v/r)+' USD</b>'
+            : 'Escribí el precio en pesos y lo paso a dólares.';
+        };
+        document.querySelectorAll('[data-ecur]').forEach(b => b.onclick = () => {
+          const prev = cur;
+          cur = b.dataset.ecur;
+          document.querySelectorAll('[data-ecur]').forEach(x => x.className = x.dataset.ecur === cur ? 'on' : '');
+          // pasamos el valor que ya está escrito a la moneda nueva, para no tener que retipearlo
+          const r = state.settings.rate.value, v = Number(inp.value);
+          if(r && isFinite(v) && v > 0 && prev !== cur){
+            inp.value = cur === 'ars' ? Math.round(v*r) : (v/r).toFixed(2);
+          }
+          upd(); inp.focus();
+        });
+        inp.oninput = upd;
+        document.getElementById('eiName').focus();
+      });
+  });
+
+  document.querySelectorAll('[data-buy]').forEach(b => b.onclick = () => {
+    const it = o.items.find(i => i.id === b.dataset.buy);
+    if(!it) return;
+    if(!confirm('¿Marcar «'+it.name+'» como comprado?\n\nSe van a descontar '+usd(it.price)+
+                ' USD de tu ahorro y el ítem sale del total pendiente.')) return;
+    it.bought = true;
+    it.boughtDate = today();
+    o.movements.push({ id: uid(), date: today(), amount: -it.price,
+      note: 'Compra: '+it.name, cat: 'Compra', excludeFromRate: true, itemId: it.id });
+    save(); renderTabs(); render();
+  });
+
+  document.querySelectorAll('[data-unbuy]').forEach(b => b.onclick = () => {
+    const it = o.items.find(i => i.id === b.dataset.unbuy);
+    if(!it) return;
+    if(!confirm('¿Deshacer la compra de «'+it.name+'»?\n\nVuelve al total pendiente y se devuelven los '+
+                usd(it.price)+' USD al ahorro.')) return;
+    it.bought = false; it.boughtDate = null;
+    o.movements = o.movements.filter(m => m.itemId !== it.id);
+    save(); renderTabs(); render();
+  });
+
+  /* -- carga de plata: abre el modal del número grande -- */
+  if($('#qAdd')) $('#qAdd').onclick = () => montoModal(1);
+  if($('#qSub')) $('#qSub').onclick = () => montoModal(-1);
+
+  /* -- carga rápida (quedó sin campo inline; se mantiene por compatibilidad) -- */
+  const qA = $('#qAmount'), qC = $('#qCat'), qF = $('#qFlash');
+
+  /** Agrega un movimiento con la fecha de hoy y avisa cuántos días te movió */
+  function cargaRapida(signo){
+    const v = Number(qA.value);
+    if(!isFinite(v) || v <= 0){ qA.focus(); return; }
+    const monto = signo * v;
+    const dd = diasQueMueve(monto, c);   // congelada acá: la historia no se reescribe
+    o.movements.push({ id: uid(), date: today(), amount: monto,
+      note: '', cat: signo > 0 ? qC.value : 'Gasto', excludeFromRate: false,
+      itemId: null, recYm: null, diasPlan: dd });
+    save();
+    qA.value = '';
+    renderTabs(); render();
+
+    const f = document.getElementById('qFlash');
+    if(f){
+      f.textContent = dd
+        ? (dd > 0 ? `+${usd(v)} · te adelantaste ${dd} día${dd===1?'':'s'}`
+                  : `−${usd(v)} · te atrasaste ${Math.abs(dd)} día${Math.abs(dd)===1?'':'s'}`)
+        : (signo > 0 ? `+${usd(v)} cargado` : `−${usd(v)} cargado`);
+      f.style.color = signo > 0 ? 'var(--acc)' : 'var(--bad)';
+      requestAnimationFrame(() => f.classList.add('on'));
+      setTimeout(() => { const g = document.getElementById('qFlash'); if(g) g.classList.remove('on'); }, 3200);
+    }
+    const nuevo = document.getElementById('qAmount');
+    if(nuevo) nuevo.focus();
+  }
+
+  if(qA) qA.onkeydown = e => { if(e.key === 'Enter'){ e.preventDefault(); cargaRapida(1); } };
+
+  /* -- sueldo pendiente: es global y se reparte entre los objetivos por porcentaje -- */
+  document.querySelectorAll('[data-pend-ok]').forEach(b => b.onclick = () => {
+    const ym = b.dataset.pendOk;
+    const inp = $('#pendMonto');
+    const monto = Math.max(0, Number(inp && inp.value) || 0);
+    const conPct = state.objectives.filter(x => (x.pctSueldo||0) > 0);
+    if(!conPct.length){
+      alert('Antes de confirmar tenés que repartir el sueldo.\n\n'
+          + 'Abrí el menú de las tres barritas y asignale un porcentaje a cada objetivo.');
+      return;
+    }
+    const fecha = diaDelMes(ym, state.settings.sueldo.dia);
+    conPct.forEach(x => {
+      const parte = monto * x.pctSueldo / 100;
+      if(parte <= 0) return;
+      // recYm identifica con certeza que salió de confirmar un sueldo: si después
+      // borrás el movimiento, ese mes vuelve a quedar pendiente.
+      x.movements.push({ id: uid(), date: fecha, amount: parte, note: 'Sueldo',
+        cat: 'Sueldo', excludeFromRate: true, itemId: null, recYm: ym, diasPlan: null });
+    });
+    state.settings.sueldo.hechos.push(ym);
+    save(); renderTabs(); render();
+  });
+  document.querySelectorAll('[data-pend-skip]').forEach(b => b.onclick = () => {
+    state.settings.sueldo.hechos.push(b.dataset.pendSkip);
+    save(); renderTabs(); render();
+  });
+
+  /* -- movimientos -- */
+  let kind = 'in';
+  document.querySelectorAll('[data-kind]').forEach(b => b.onclick = () => {
+    kind = b.dataset.kind;
+    document.querySelectorAll('[data-kind]').forEach(x => {
+      x.className = x.dataset.kind === kind ? ('on '+kind) : '';
+    });
+    const sel = $('#mvCat');
+    if(sel) sel.innerHTML = (kind === 'in' ? CATS_IN : CATS_OUT).map(x => `<option>${x}</option>`).join('');
+  });
+
+  const fMov = $('#fMov');
+  if(fMov) fMov.onsubmit = e => {
+    e.preventDefault();
+    const fd = new FormData(fMov);
+    const date = String(fd.get('date')||'');
+    let amount = Number(fd.get('amount'));
+    if(!date || !isFinite(amount) || amount <= 0) return;
+    if(date > today()){
+      alert('La fecha es futura.\n\nLos movimientos se cargan cuando pasan de verdad. '
+          + 'Para plata programada usá el sueldo recurrente, en los ajustes del objetivo.');
+      return;
+    }
+    if(kind === 'out') amount = -amount;
+    const excl = fd.get('excl') === 'on';
+    o.movements.push({
+      id: uid(), date, amount,
+      note: String(fd.get('note')||'').trim(),
+      cat: String(fd.get('cat')||''),
+      excludeFromRate: excl,
+      itemId: null, recYm: null,
+      // congelada acá; los excluidos (ahorro previo) no llevan etiqueta: son plata prevista
+      diasPlan: excl ? null : diasQueMueve(amount, c)
+    });
+    save(); renderTabs(); render();
+  };
+
+  document.querySelectorAll('[data-del-mov]').forEach(b => b.onclick = () => {
+    const m = o.movements.find(x => x.id === b.dataset.delMov);
+    if(!m) return;
+    if(m.itemId){
+      alert('Este movimiento salió de marcar un ítem como comprado.\n\nPara borrarlo, deshacé la compra desde el ítem.');
+      return;
+    }
+    const esSueldo = m.recYm && o.recurrente;
+    if(!confirm('¿Borrar este movimiento de '+usd(Math.abs(m.amount))+' USD?'
+      + (esSueldo ? '\n\nEs un sueldo confirmado: el mes va a volver a aparecer como pendiente.' : ''))) return;
+    if(esSueldo){
+      // sin esto, el mes queda marcado como hecho y la plata desaparece para siempre
+      o.recurrente.hechos = o.recurrente.hechos.filter(x => x !== m.recYm);
+    }
+    o.movements = o.movements.filter(x => x.id !== m.id);
+    save(); renderTabs(); render();
+  });
+
+  /* -- gráfico: rango, navegación y zoom -- */
+  wireChart();
+
+  /* -- el simulador vive en el panel lateral; acá no hay nada que cablear -- */
+
+  /* -- ajustes -- */
+  const nm = $('#setName');
+  if(nm) nm.onchange = () => {
+    const v = nm.value.trim();
+    if(v){ o.name = v; save(); renderTabs(); }
+  };
+  const sd = $('#setDate');
+  if(sd) sd.onchange = () => {
+    if(!sd.value) return;
+    if(sd.value <= o.startDate){
+      // con meta <= arranque el plan lineal colapsa a un día y muestra cualquier cosa
+      alert('La fecha meta tiene que ser posterior al arranque ('+fmtDate(o.startDate)+').');
+      sd.value = o.targetDate;
+      return;
+    }
+    o.targetDate = sd.value; save(); renderTabs(); render();
+  };
+  const ss = $('#setStart');
+  if(ss) ss.onchange = () => {
+    if(!ss.value) return;
+    if(ss.value >= o.targetDate){
+      alert('El arranque tiene que ser anterior a la fecha meta ('+fmtDate(o.targetDate)+').');
+      ss.value = o.startDate;
+      return;
+    }
+    o.startDate = ss.value; save(); render();
+  };
+
+  /* -- sueldo recurrente -- */
+  const rOn = $('#setRecOn');
+
+  // Marca como hechos los meses cuyo cobro ya venció. Se usa al apagar el recurrente
+  // y al volver a prenderlo: los meses del período apagado no deben caer todos juntos
+  // como pendientes.
+  const saltearVencidos = (rec) => {
+    let ym = rec.desde;
+    const lim = mesDe(today());
+    while(ym <= lim){
+      if(diaDelMes(ym, rec.dia) < today() && !rec.hechos.includes(ym)) rec.hechos.push(ym);
+      ym = addMes(ym, 1);
+    }
+  };
+
+  const guardarRec = () => {
+    if(!rOn.checked){
+      if(o.recurrente){
+        saltearVencidos(o.recurrente);
+        o.recurrente.activo = false;
+      }
+      save(); renderTabs(); render(); return;
+    }
+    const dia = Math.max(1, Math.min(31, Number($('#setRecDia').value) || 1));
+    const monto = Number($('#setRecMonto').value) || 0;
+    const prev = o.recurrente;
+    const reactivando = !!(prev && prev.activo === false);
+    o.recurrente = {
+      dia, monto, activo: true,
+      desde: (prev && prev.desde) || mesDesdeRec(dia),
+      hechos: (prev && prev.hechos) || []
+    };
+    // Solo al reactivar: editar el día o el monto con el recurrente prendido no debe
+    // tragarse un mes que estaba legítimamente pendiente.
+    if(reactivando) saltearVencidos(o.recurrente);
+    save(); renderTabs(); render();
+  };
+  if(rOn){
+    rOn.onchange = () => {
+      const box = $('#setRecBox');
+      if(box) box.style.display = rOn.checked ? '' : 'none';
+      if(!rOn.checked) guardarRec();
+    };
+    const rd = $('#setRecDia'), rm = $('#setRecMonto');
+    if(rd) rd.onchange = guardarRec;
+    if(rm) rm.onchange = guardarRec;
+  }
+
+  const ba = $('#btnArch');
+  if(ba) ba.onclick = () => {
+    o.archived = !o.archived;
+    if(o.archived){
+      const next = state.objectives.find(x => !x.archived);
+      state.activeId = next ? next.id : o.id;
+      showArchived = !next;
+    }
+    save(); renderTabs(); render();
+  };
+
+  const bd = $('#btnDelObj');
+  if(bd) bd.onclick = () => {
+    if(!confirm('¿Borrar el objetivo «'+o.name+'» con todos sus ítems y movimientos?\n\nEsto no se puede deshacer.')) return;
+    state.objectives = state.objectives.filter(x => x.id !== o.id);
+    const next = state.objectives.find(x => !x.archived) || state.objectives[0];
+    state.activeId = next ? next.id : null;
+    save(); renderTabs(); render();
+  };
+}
+
+function moveItem(o, id, dir){
+  const list = o.items.filter(i => !i.bought).sort((a,b) => a.order - b.order);
+  const idx = list.findIndex(i => i.id === id);
+  if(idx < 0) return;
+  const j = idx + dir;
+  if(j < 0 || j >= list.length) return;
+  const tmp = list[idx].order;
+  list[idx].order = list[j].order;
+  list[j].order = tmp;
+  save(); render();
+}
+
+/* ============================================================
+   10. MODAL DE OBJETIVO (crear)
+   ============================================================ */
+function objModal(){
+  const def = addDays(today(), 120);
+  modal('Nuevo objetivo', `<div class="stack">
+      <div class="f"><label>Nombre del objetivo</label>
+        <input id="noName" placeholder="Ej: Upgrade PC" maxlength="60"></div>
+      <div class="f"><label>Fecha meta</label>
+        <input id="noDate" type="date" value="${def}"></div>
+      <div class="f"><label>Ahorro que ya tenés para esto (USD, opcional)</label>
+        <input id="noSaldo" type="number" step="0.01" min="0" placeholder="0"></div>
+      <div class="hint">Ese ahorro previo se carga como primer movimiento y no se cuenta
+        en el promedio semanal, para que la proyección no te quede inflada.
+        Los ítems que querés comprar los agregás después, adentro del objetivo.</div>
+      <div class="sep"></div>
+      <div class="row">
+        <div class="f xs"><label>Cobrás el día</label>
+          <input id="noDia" type="number" min="1" max="31" placeholder="5"></div>
+        <div class="f"><label>De eso destinás a este pozo (USD)</label>
+          <input id="noRec" type="number" step="0.01" min="0" placeholder="50"></div>
+      </div>
+      <div class="hint">Opcional. Cada mes, ese día, te va a aparecer arriba un aviso para
+        confirmarlo con un click. No se carga solo: si un mes no lo ahorraste, lo salteás y listo.</div>
+    </div>`,
+    [{label:'Cancelar', onClick: closeModal},
+     {label:'Crear objetivo', cls:'primary', onClick: () => {
+        const name = document.getElementById('noName').value.trim() || 'Objetivo';
+        const date = document.getElementById('noDate').value || def;
+        const ini  = Number(document.getElementById('noSaldo').value) || 0;
+        const dia  = Number(document.getElementById('noDia').value) || 0;
+        const mrec = Number(document.getElementById('noRec').value) || 0;
+        if(date <= today()){
+          alert('La fecha meta tiene que ser posterior a hoy.');
+          return;
+        }
+        const o = {
+          id: uid(), name, targetDate: date, startDate: today(),
+          archived:false, items:[], movements:[], fechas:[],
+          // mesDesdeRec: si el día de cobro de este mes ya pasó, ese sueldo no era
+          // para este objetivo — arranca el mes que viene
+          recurrente: (dia >= 1 && dia <= 31 && mrec > 0)
+            ? { dia, monto: mrec, activo: true, desde: mesDesdeRec(dia), hechos: [] }
+            : null
+        };
+        if(ini > 0){
+          o.movements.push({ id: uid(), date: today(), amount: ini,
+            note: 'Ahorro previo', cat: 'Otro', excludeFromRate: true, itemId: null });
+        }
+        state.objectives.push(o);
+        state.activeId = o.id;
+        simA = simB = null;
+        save(); closeModal(); renderTabs(); render();
+     }}],
+    () => document.getElementById('noName').focus());
+}
+
+/* ============================================================
+   10b. MODO PRUEBA
+   ============================================================ */
+function renderTestBar(){
+  const bar = document.getElementById('testBar');
+  if(!testMode){ bar.className = ''; bar.innerHTML = ''; return; }
+
+  bar.className = 'testbar';
+  bar.innerHTML = `
+    <span class="tb-tag">Modo prueba</span>
+    <span class="tb-txt">Una copia de tus datos reales sacada al entrar. Nada de lo que hagas acá toca lo real.</span>
+    <span class="tb-sp"></span>
+    <span class="tb-lbl">Hoy es</span>
+    <input type="date" id="tbDate" value="${today()}">
+    <button class="btn sm ghost" data-salto="1">+1 día</button>
+    <button class="btn sm ghost" data-salto="7">+1 semana</button>
+    <button class="btn sm ghost" data-salto="30">+1 mes</button>
+    <button class="btn sm ghost" data-salto="-1">−1 día</button>
+    <button class="btn sm ghost" id="tbReal">Fecha real</button>
+    <button class="btn sm ghost danger" id="tbVaciar">Volver a copiar lo real</button>
+    <button class="btn sm" id="tbSalir">Volver a lo real</button>`;
+
+  document.getElementById('tbDate').onchange = e => setFakeToday(e.target.value || null);
+  bar.querySelectorAll('[data-salto]').forEach(b => b.onclick = () => {
+    const n = Number(b.dataset.salto);
+    const destino = addDays(today(), n);
+    // Si en el camino hay un día de cobro sin confirmar, frenamos ahí: en modo prueba
+    // saltearse el sueldo de un mes hace que todo lo que venga después sea mentira.
+    if(n > 0){
+      const cobro = proximoCobro(today(), destino);
+      if(cobro){ setFakeToday(cobro); return; }
+    }
+    setFakeToday(destino);
+  });
+  document.getElementById('tbReal').onclick = () => setFakeToday(null);
+  document.getElementById('tbSalir').onclick = () => setTestMode(false);
+  document.getElementById('tbVaciar').onclick = () => {
+    if(!confirm('¿Descartar lo que hiciste en la prueba y volver a copiar tus datos reales?\n\nTus datos reales no se tocan.')) return;
+    // en medio de la prueba, lo real hay que leerlo de su caja: state es el sandbox
+    let real = null;
+    try{ real = JSON.parse(lsGet(KEY_REAL) || 'null'); }catch(e){}
+    state = normalize(real || {});
+    state.settings.fakeToday = null; fakeToday = null;
+    save(); renderRate(); renderTabs(); render(); renderTestBar();
+  };
+}
+
+function toggleTestMode(){
+  if(testMode){ setTestMode(false); return; }
+  // Foto de tus datos reales tal como están en este momento: el sandbox arranca
+  // idéntico a lo real (objetivos, ítems, movimientos, sueldo) y de ahí jugás.
+  const foto = structuredClone(state);
+  foto.settings.fakeToday = null;
+  setTestMode(true);          // cambia a la caja de prueba
+  state = foto;               // ...y la pisa con la foto recién sacada
+  fakeToday = null;
+  save();
+  renderRate(); render(); renderTestBar();
+}
+
+/* ============================================================
+   10c. PANEL LATERAL
+   ============================================================ */
+const drawer = document.getElementById('drawer');
+const scrim  = document.getElementById('scrim');
+
+function openDrawer(){
+  renderDrawer();
+  drawer.classList.add('show'); scrim.classList.add('show');
+  drawer.setAttribute('aria-hidden','false');
+  document.getElementById('btnMenu').setAttribute('aria-expanded','true');
+  document.body.style.overflow = 'hidden';
+  const p = drawer.querySelector('button,input,select'); if(p) p.focus();
+}
+function closeDrawer(){
+  drawer.classList.remove('show'); scrim.classList.remove('show');
+  drawer.setAttribute('aria-hidden','true');
+  document.getElementById('btnMenu').setAttribute('aria-expanded','false');
+  document.body.style.overflow = '';
+}
+scrim.onclick = closeDrawer;
+document.getElementById('btnMenu').onclick = () =>
+  drawer.classList.contains('show') ? closeDrawer() : openDrawer();
+
+function renderDrawer(){
+  const o = activeObj();
+  const c = o ? compute(o) : null;
+  const s = state.settings.sueldo;
+  const r = state.settings.rate;
+  const activos = state.objectives.filter(x => !x.archived);
+  const asignado = pctAsignado(null);
+
+  // --- reparto del sueldo
+  const filas = activos.map(x => `<div class="rep-row">
+      <div class="rn">${esc(x.name)}
+        <small>${s.monto>0 ? usd(s.monto*(x.pctSueldo||0)/100)+' USD por mes' : 'sin sueldo cargado'}</small></div>
+      <input type="number" min="0" max="100" step="1" value="${x.pctSueldo||0}" data-pct="${x.id}" aria-label="Porcentaje para ${esc(x.name)}">
+    </div>`).join('');
+
+  // --- fechas de oportunidad (las conocidas + las tuyas, hasta la meta)
+  let fechasHtml = '';
+  if(o && c){
+    fechasHtml = c.fechasClave.length
+      ? c.fechasClave.map(f => `<div class="rep-row">
+          <div class="rn">${esc(f.name)}
+            <small>${fmtLong(f.date)} · en ${humanDays(f.dias)} · llegás con ${Math.round(f.pct*100)}%</small></div>
+          ${f.fija ? '<span class="cap" style="text-align:right;font-size:11px">fija</span>'
+                   : `<button class="ord-btn" data-del-fecha="${f.id}" title="Quitar" style="justify-self:end">${ico('x',12)}</button>`}
+        </div>`).join('')
+      : `<div class="cap">No hay fechas entre hoy y tu meta del ${fmtLong(o.targetDate)}.</div>`;
+  }
+
+  drawer.innerHTML = `
+    <div class="drawer-h">
+      <h2>Menú</h2>
+      <button class="iconbtn" id="dClose" aria-label="Cerrar">${ico('x')}</button>
+    </div>
+
+    <div class="dsec">
+      <h3>${ico('wallet')} Sueldo y reparto</h3>
+      <label class="check" style="margin-bottom:12px">
+        <input type="checkbox" id="dSueldoOn" ${s.activo?'checked':''}>
+        Destino parte del sueldo a mis objetivos
+      </label>
+      <div id="dSueldoBox" style="${s.activo?'':'display:none'}">
+        <div class="row" style="margin-bottom:14px">
+          <div class="f xs"><label>Cobro el día</label>
+            <input type="number" min="1" max="31" id="dSueldoDia" value="${s.dia}"></div>
+          <div class="f"><label>Monto total USD</label>
+            <input type="number" min="0" step="0.01" id="dSueldoMonto" value="${s.monto||''}" placeholder="200"></div>
+        </div>
+        <div class="rep">${filas || '<div class="cap">Creá un objetivo para repartirlo.</div>'}</div>
+        <div class="rep-tot ${asignado>100?'over':''}">
+          <span>Asignado</span>
+          <b>${asignado}% ${s.monto>0?'· '+usd(s.monto*Math.min(100,asignado)/100)+' USD':''}</b>
+        </div>
+        <div class="hint" style="margin-top:8px">
+          Lo que no asignás no se registra en ningún objetivo. El día ${s.dia} de cada mes
+          te aviso una sola vez y se reparte solo.
+        </div>
+      </div>
+    </div>
+
+    <div class="dsec">
+      <h3>${ico('flag')} Fechas de oportunidad</h3>
+      <div class="rep">${fechasHtml || '<div class="cap">Elegí un objetivo primero.</div>'}</div>
+      ${o ? `<button class="btn sm" id="dAddFecha" style="margin-top:12px">${ico('plus')} Agregar fecha</button>` : ''}
+      <div class="hint" style="margin-top:10px">
+        El Black Friday y Navidad los calculo solos. Sumá las que te sirvan: Hot Sale,
+        CyberMonday, el aguinaldo.
+      </div>
+    </div>
+
+    ${o ? `<div class="dsec">
+      <h3>${ico('spark')} ¿Qué pasa si…?</h3>
+      <div class="f" style="margin-bottom:10px"><label>Si meto por día (USD)</label>
+        <input id="simA" type="number" step="0.01" min="0" value="${simA==null?(c.reqDia!==Infinity&&c.reqDia>0?(Math.round(c.reqDia*100)/100):5):simA}"></div>
+      <div class="sim-out" id="simOutA"></div>
+      <div class="f" style="margin:14px 0 10px"><label>Si quiero llegar el</label>
+        <input id="simB" type="date" value="${simB||o.targetDate}"></div>
+      <div class="sim-out" id="simOutB"></div>
+    </div>` : ''}
+
+    <div class="dsec">
+      <h3>${ico('gear')} Herramientas</h3>
+      <div class="rep-row" style="border:0;padding-top:0">
+        <div class="rn">Cotización del dólar
+          <small>${r.value ? '$'+nfARS.format(Math.round(r.value))+' · '+(r.source==='manual'?'a mano':(r.source||'auto')) : 'sin dato'}</small></div>
+        <button class="btn sm ghost" id="dRate" style="justify-self:end">Cambiar</button>
+      </div>
+      <div class="rep-row">
+        <div class="rn">Tema<small>${state.settings.theme==='dark'?'Oscuro':'Claro'}</small></div>
+        <button class="btn sm ghost" id="dTheme" style="justify-self:end">Cambiar</button>
+      </div>
+      <div class="rep-row">
+        <div class="rn">Copia de seguridad<small>Bajá o restaurá tus datos</small></div>
+        <span style="display:flex;gap:6px;justify-self:end">
+          <button class="btn sm ghost" id="dExport" title="Bajar">${ico('down2')}</button>
+          <button class="btn sm ghost" id="dImport" title="Restaurar">${ico('up2')}</button>
+        </span>
+      </div>
+      <div class="rep-row" style="border:0">
+        <div class="rn">Modo prueba<small>${testMode?'Activo ahora':'Copia tus datos y viajá en el tiempo'}</small></div>
+        <button class="btn sm ${testMode?'primary':'ghost'}" id="dTest" style="justify-self:end">
+          ${testMode?'Salir':'Entrar'}</button>
+      </div>
+    </div>`;
+
+  wireDrawer(o,c);
+}
+
+function wireDrawer(o,c){
+  const $ = s => drawer.querySelector(s);
+  $('#dClose').onclick = closeDrawer;
+
+  /* -- sueldo global -- */
+  const on = $('#dSueldoOn');
+  on.onchange = () => {
+    state.settings.sueldo.activo = on.checked;
+    save(); renderDrawer(); render();
+  };
+  const gd = $('#dSueldoDia'), gm = $('#dSueldoMonto');
+  if(gd) gd.onchange = () => {
+    state.settings.sueldo.dia = Math.max(1, Math.min(31, Number(gd.value)||1));
+    save(); renderDrawer(); render();
+  };
+  if(gm) gm.onchange = () => {
+    state.settings.sueldo.monto = Math.max(0, Number(gm.value)||0);
+    save(); renderDrawer(); render();
+  };
+
+  drawer.querySelectorAll('[data-pct]').forEach(inp => inp.onchange = () => {
+    const obj = state.objectives.find(x => x.id === inp.dataset.pct);
+    if(!obj) return;
+    const pedido = Math.max(0, Math.min(100, Math.round(Number(inp.value)||0)));
+    const otros = pctAsignado(obj.id);
+    if(otros + pedido > 100){
+      // no se puede repartir más del sueldo que entra
+      alert('No te alcanza: ya tenés ' + otros + '% repartido en los otros objetivos.\n\n'
+          + 'A este le podés poner hasta ' + (100 - otros) + '%.');
+      inp.value = obj.pctSueldo || 0;
+      return;
+    }
+    obj.pctSueldo = pedido;
+    save(); renderDrawer(); render();
+  });
+
+  /* -- fechas de oportunidad -- */
+  const af = $('#dAddFecha');
+  if(af) af.onclick = () => {
+    closeDrawer();
+    modal('Nueva fecha de oportunidad', `<div class="stack">
+        <div class="f"><label>Qué es</label>
+          <input id="nfName" placeholder="Ej: Hot Sale, CyberMonday, aguinaldo" maxlength="40"></div>
+        <div class="f"><label>Cuándo</label>
+          <input id="nfDate" type="date" value="${addDays(today(),30)}"></div>
+        <div class="hint">Te muestro con qué porcentaje del objetivo llegás a esa fecha.</div>
+      </div>`,
+      [{label:'Cancelar', onClick: closeModal},
+       {label:'Agregar', cls:'primary', onClick: () => {
+          const n = document.getElementById('nfName').value.trim();
+          const d = document.getElementById('nfDate').value;
+          if(!n || !d) return;
+          o.fechas.push({ id: uid(), name: n, date: d });
+          save(); closeModal(); render(); openDrawer();
+       }}],
+      () => document.getElementById('nfName').focus());
+  };
+  drawer.querySelectorAll('[data-del-fecha]').forEach(b => b.onclick = () => {
+    o.fechas = o.fechas.filter(f => f.id !== b.dataset.delFecha);
+    save(); renderDrawer(); render();
+  });
+
+  /* -- simulador -- */
+  const sa = $('#simA'), sb = $('#simB');
+  if(sa){
+    sa.oninput = () => { simA = sa.value; renderSim(o,c); };
+    sb.onchange = () => { simB = sb.value; renderSim(o,c); };
+    if(simA == null) simA = sa.value;
+    if(simB == null) simB = sb.value;
+    renderSim(o,c);
+  }
+
+  /* -- herramientas -- */
+  $('#dRate').onclick = () => { closeDrawer(); rateModal(); };
+  $('#dTheme').onclick = () => {
+    state.settings.theme = state.settings.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = state.settings.theme;
+    save(); render(); renderDrawer();
+  };
+  $('#dExport').onclick = exportarBackup;
+  $('#dImport').onclick = () => document.getElementById('fileImport').click();
+  $('#dTest').onclick = () => { closeDrawer(); toggleTestMode(); };
+}
+
+/* ============================================================
+   10d. LÁPIZ: objetivos y ajustes
+   ============================================================ */
+function editModal(){
+  const o = activeObj();
+  const lista = state.objectives.map(x => {
+    const cc = compute(x);
+    return `<button class="orow ${x.id===state.activeId?'on':''} ${x.archived?'arch':''}" data-goto="${x.id}">
+      <span class="oi"><b>${esc(x.name)}</b>
+        <small>${fmtLong(x.targetDate)}${x.archived?' · archivado':''}</small></span>
+      <span class="op">${Math.round(cc.pct*100)}%</span>
+    </button>`;
+  }).join('');
+
+  const cuerpo = `<div class="stack">
+      <div>
+        <div class="eyebrow" style="margin-bottom:10px">${ico('target')} Tus objetivos</div>
+        <div class="olist">${lista || '<div class="cap">Todavía no creaste ninguno.</div>'}</div>
+        <button class="btn sm" id="eNuevo">${ico('plus')} Nuevo objetivo</button>
+      </div>
+      ${o ? `
+      <div class="sep"></div>
+      <div class="eyebrow" style="margin-bottom:2px">${ico('pencil')} Editar «${esc(o.name)}»</div>
+      <div class="f"><label>Nombre</label><input id="eName" value="${esc(o.name)}" maxlength="60"></div>
+      <div class="row">
+        <div class="f"><label>Fecha meta</label><input id="eDate" type="date" value="${o.targetDate}"></div>
+        <div class="f"><label>Arrancó el</label><input id="eStart" type="date" value="${o.startDate}"></div>
+      </div>
+      <div class="hint">«Arrancó el» es desde cuándo se traza el plan ideal. El sueldo y su reparto
+        se configuran en el menú lateral, porque son uno solo para todos los objetivos.</div>
+      <div class="sep"></div>
+      <div class="row">
+        <button class="btn sm" id="eArch">${ico('archive')} ${o.archived?'Desarchivar':'Archivar'}</button>
+        <div class="spacer"></div>
+        <button class="btn sm danger ghost" id="eDel">${ico('trash')} Borrar objetivo</button>
+      </div>` : ''}
+    </div>`;
+
+  modal('Objetivos y ajustes', cuerpo, [{label:'Listo', cls:'primary', onClick: closeModal}], () => {
+    const $ = s => document.querySelector(s);
+    document.querySelectorAll('[data-goto]').forEach(b => b.onclick = () => {
+      state.activeId = b.dataset.goto;
+      chartOffset = 0; zoomDays = null; zoomStart = 0; simA = null; simB = null;
+      save(); closeModal(); render();
+    });
+    $('#eNuevo').onclick = () => { closeModal(); objModal(); };
+    if(!o) return;
+
+    $('#eName').onchange = () => { const v=$('#eName').value.trim(); if(v){ o.name=v; save(); render(); } };
+    $('#eDate').onchange = () => {
+      const v = $('#eDate').value; if(!v) return;
+      if(v <= o.startDate){ alert('La fecha meta tiene que ser posterior al arranque ('+fmtDate(o.startDate)+').');
+        $('#eDate').value = o.targetDate; return; }
+      o.targetDate = v; save(); render();
+    };
+    $('#eStart').onchange = () => {
+      const v = $('#eStart').value; if(!v) return;
+      if(v >= o.targetDate){ alert('El arranque tiene que ser anterior a la meta ('+fmtDate(o.targetDate)+').');
+        $('#eStart').value = o.startDate; return; }
+      o.startDate = v; save(); render();
+    };
+    $('#eArch').onclick = () => {
+      o.archived = !o.archived;
+      if(o.archived){ const n = state.objectives.find(x => !x.archived); state.activeId = n ? n.id : o.id; }
+      save(); closeModal(); render();
+    };
+    $('#eDel').onclick = () => {
+      if(!confirm('¿Borrar «'+o.name+'» con todos sus ítems y movimientos?\n\nEsto no se puede deshacer.')) return;
+      state.objectives = state.objectives.filter(x => x.id !== o.id);
+      const n = state.objectives.find(x => !x.archived) || state.objectives[0];
+      state.activeId = n ? n.id : null;
+      save(); closeModal(); render();
+    };
+  });
+}
+document.getElementById('btnEdit').onclick = editModal;
+
+/* ============================================================
+   10e. MODAL DE MONTO (sale del botón, número grande)
+   ============================================================ */
+function montoModal(signo){
+  const o = activeObj(); if(!o) return;
+  const c = compute(o);
+  const cats = signo > 0 ? CATS_IN : CATS_OUT;
+  const atajos = signo > 0 ? [10,20,50,100] : [10,20,50,100];
+
+  modal('', `
+    <div class="monto-tag ${signo>0?'in':'out'}">${ico(signo>0?'up2':'down2')} ${signo>0?'Agregar':'Sacar'}</div>
+    <div class="monto-wrap">
+      <span class="sg">${signo>0?'+':'−'}</span>
+      <input id="montoIn" type="number" inputmode="decimal" step="0.01" min="0"
+             placeholder="0" autocomplete="off" aria-label="Monto en dólares">
+    </div>
+    <div class="monto-ars" id="montoArs">USD</div>
+    <div class="monto-chips">
+      ${atajos.map(v => `<button type="button" data-add="${v}">+${v}</button>`).join('')}
+    </div>
+    <div class="f" style="margin-top:16px;text-align:left">
+      <label>${signo>0?'De dónde salió':'Para qué'}</label>
+      <select id="montoCat">${cats.map(x=>`<option>${x}</option>`).join('')}</select>
+    </div>`,
+    [{label:'Cancelar', onClick: closeModal},
+     {label: signo>0?'Sumar':'Sacar', cls:'primary', onClick: () => {
+        const v = Number(document.getElementById('montoIn').value);
+        if(!isFinite(v) || v <= 0){ document.getElementById('montoIn').focus(); return; }
+        const monto = signo * v;
+        o.movements.push({ id: uid(), date: today(), amount: monto, note: '',
+          cat: document.getElementById('montoCat').value,
+          excludeFromRate: false, itemId: null, recYm: null,
+          diasPlan: diasQueMueve(monto, c) });
+        save(); closeModal(); render();
+        flashMov(monto, diasQueMueve(monto, c));
+     }}],
+    () => {
+      const inp = document.getElementById('montoIn');
+      const eq  = document.getElementById('montoArs');
+      const upd = () => {
+        const v = Number(inp.value);
+        eq.textContent = (isFinite(v) && v > 0 && ars(v)) ? ars(v) : 'USD';
+        // el campo crece con el número para que siempre quede centrado
+        inp.style.width = Math.max(2, String(inp.value||'0').length + .4) + 'ch';
+      };
+      inp.oninput = upd; upd();
+      inp.onkeydown = e => { if(e.key === 'Enter'){ e.preventDefault();
+        ov.querySelector('.mf .btn.primary').click(); } };
+      document.querySelectorAll('[data-add]').forEach(b => b.onclick = () => {
+        inp.value = (Number(inp.value)||0) + Number(b.dataset.add); upd(); inp.focus();
+      });
+      setTimeout(() => inp.focus(), 60);
+    }, 'monto-mod');
+}
+
+/** Aviso flotante con los días que te movió el aporte */
+function flashMov(monto, dd){
+  const el = document.createElement('div');
+  el.className = 'toast ' + (monto >= 0 ? 'in' : 'out');
+  el.innerHTML = (monto>=0?'+':'−') + usd(Math.abs(monto)) + ' USD'
+    + (dd ? ' <b>· ' + (dd>0 ? 'te adelantaste '+dd : 'te atrasaste '+Math.abs(dd))
+          + ' día' + (Math.abs(dd)===1?'':'s') + '</b>' : '');
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => { el.classList.remove('show'); setTimeout(()=>el.remove(), 400); }, 3400);
+}
+
+/* ============================================================
+   11. COTIZACIÓN A MANO / TEMA / BACKUP
+   ============================================================ */
+function rateModal(){
+  const r = state.settings.rate;
+  modal('Cotización del dólar', `<div class="stack">
+      <div class="f"><label>Pesos por dólar (venta)</label>
+        <input id="rIn" type="number" step="0.01" min="0" value="${r.value||''}" placeholder="1520"></div>
+      <div class="hint">Se usa <b>solo para mostrarte el equivalente en pesos</b> al lado de cada número.
+        Tus aportes los cargás en dólares, así que mover esto no cambia tu progreso.<br><br>
+        Fuente actual: <b>${r.source ? esc(r.source) : 'ninguna'}</b>${
+        r.fetchedAt && !isNaN(new Date(r.fetchedAt)) ? ' · '+fmtDate(toKey(new Date(r.fetchedAt))) : ''}.</div>
+    </div>`,
+    [{label:'Cancelar', onClick: closeModal},
+     {label:'Buscar automática', onClick: async () => {
+        closeModal();
+        const ok = await fetchRate();
+        if(!ok) alert('No se pudo traer la cotización.\n\nPuede ser que no tengas internet o que el navegador bloquee el pedido.\nCargala a mano desde el mismo botón.');
+     }},
+     {label:'Guardar', cls:'primary', onClick: () => {
+        const v = Number(document.getElementById('rIn').value);
+        if(!isFinite(v) || v <= 0) return;
+        state.settings.rate = { value:v, source:'manual', fetchedAt:new Date().toISOString() };
+        save(); closeModal(); renderRate(); render();
+     }}],
+    () => document.getElementById('rIn').focus());
+}
+
+function exportarBackup(){
+  // el backup lleva la marca de la caja de la que salió, para no pisar datos reales
+  // con datos de juguete sin darse cuenta
+  const data = Object.assign({}, state, { sandbox: testMode ? true : undefined });
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (testMode ? 'ahorro-PRUEBA-' : 'ahorro-backup-')+today()+'.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+document.getElementById('fileImport').onchange = e => {
+  const f = e.target.files[0];
+  if(!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try{
+      const crudo = JSON.parse(rd.result);
+      if(crudo && crudo.sandbox && !testMode){
+        if(!confirm('OJO: este backup salió del MODO PRUEBA (datos de juguete).\n\n'
+          + 'Estás en modo real: si seguís, pisás tus datos de verdad con los de prueba.\n'
+          + '¿Seguro que querés hacer eso?')) return;
+      }
+      const s = normalize(crudo);
+      if(!confirm('Vas a reemplazar TODOS los datos actuales por los del archivo.\n\n'
+        + s.objectives.length + ' objetivo(s) en el backup. ¿Seguir?')) return;
+      state = s;
+      document.documentElement.dataset.theme = state.settings.theme || 'dark';
+      save(); renderRate(); render();
+    }catch(err){
+      alert('El archivo no es un backup válido.\n\n'+err.message);
+    }
+  };
+  rd.readAsText(f);
+  e.target.value = '';
+};
+
+/* ============================================================
+   12. ARRANQUE
+   ============================================================ */
+// íconos de la barra superior (los botones nacen vacíos en el HTML)
+document.getElementById('btnMenu').innerHTML = ico('menu');
+document.getElementById('btnEdit').innerHTML = ico('pencil');
+
+document.documentElement.dataset.theme = state.settings.theme || 'dark';
+renderRate();
+renderTestBar();
+renderTabs();
+render();
+
+// La cotización solo se busca si la guardada no es de hoy.
+(function(){
+  const f = state.settings.rate.fetchedAt;
+  const fresca = f && !isNaN(new Date(f)) && toKey(new Date(f)) === toKey(new Date());
+  if(!fresca) fetchRate();
+})();
+</script>
+</body>
+</html>
