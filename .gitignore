@@ -6,3 +6,6 @@ ahorro-PRUEBA-*.json
 *.tmp
 *.bak
 Thumbs.db
+
+# copias fechadas que genera respaldar.bat (el historial de Git ya las cubre)
+copias/
