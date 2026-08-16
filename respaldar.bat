@@ -9,7 +9,7 @@ cd /d "%~dp0"
 for /f %%i in ('powershell -NoProfile -Command "Get-Date -Format yyyy-MM-dd_HHmm"') do set STAMP=%%i
 
 if not exist "copias" mkdir "copias"
-copy /Y "ahorro.html" "copias\ahorro_%STAMP%.html" >nul
+copy /Y "index.html" "copias\ahorro_%STAMP%.html" >nul
 echo Copia guardada en: copias\ahorro_%STAMP%.html
 
 git rev-parse --is-inside-work-tree >nul 2>&1

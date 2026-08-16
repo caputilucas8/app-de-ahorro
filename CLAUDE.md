@@ -1,6 +1,6 @@
 # App de Ahorro
 
-Seguidor de objetivos de ahorro. **Un solo archivo**: `ahorro.html`, ~3200 líneas,
+Seguidor de objetivos de ahorro. **Un solo archivo**: `index.html`, ~3200 líneas,
 sin dependencias, sin build. Se abre con doble clic. Los datos viven en localStorage
 del navegador, no en el archivo.
 
@@ -26,7 +26,7 @@ script, verificar después que las funciones clave sigan existiendo:
 
 ```bash
 for f in compute heroHTML itemsHTML movHTML chartHTML render wire; do
-  printf "%-12s %s\n" "$f" "$(grep -c "function $f" ahorro.html)"
+  printf "%-12s %s\n" "$f" "$(grep -c "function $f" index.html)"
 done
 ```
 
